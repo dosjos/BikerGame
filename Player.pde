@@ -1,6 +1,3 @@
-
-
-
 public class Player {
   PImage playerImage;
   PImage lifeImage;
@@ -14,27 +11,26 @@ public class Player {
   private boolean jump = false;
   private int jumpdir = 1;   
   private int jumpScale = 1;
+  private int jumpSpeeder;
+  
   public Player() {
     playerImage = loadImage("Images/Character.png");
     lifeImage = loadImage("Images/Helmet.png");
     x = 740  - (playerImage.width);
 
-    y = 700 - (int)(playerImage.height);
+    y = 680 - (int)(playerImage.height);
 
     w = playerImage.width;
     h = playerImage.height;
 
-    life = 3;
-    
-    
+    life = 3;    
   }
 
   public void draw() {
     
     int dist = 2 * (scrollSpeed/2);
     if(!jump){
-      if (goRight) {
-       
+      if (goRight) {       
         x += dist;
         if (dist == 0 && scrollSpeed > 0) {
           x+= 1;
@@ -53,7 +49,12 @@ public class Player {
         }
       }
     }
+    
     if (jump) {
+      if(scrollSpeed > 5 && jumpSpeeder % 6 == 0){
+        speedDown();
+      }
+      jumpSpeeder++;
       image(playerImage, x, y, (playerImage.width+jumpScale), (playerImage.height+jumpScale));
       jumpScale += jumpdir;
       if (jumpScale == 30) {
@@ -65,12 +66,16 @@ public class Player {
       }
     }
     else {
-      image(playerImage, x, y, playerImage.width, playerImage.height);
+      image(playerImage, x, y);
     }
+    
     for (int i = 1; i <= life; i++) {
       image(lifeImage, (70 * i) - 60, 20);
     }
   }
+
+
+
 
   boolean isJumping() {
     return jump;
@@ -81,8 +86,9 @@ public class Player {
   }
 
   void jump() {
-    if (jump == false) {
-      jump = true;       
+    if (jump == false && scrollSpeed >= 4) {
+      jump = true;    
+     jumpSpeeder = 0;   
       addScore(50.0);
     }
   }

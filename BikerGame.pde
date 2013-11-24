@@ -144,19 +144,26 @@ void keyPressed()
 
     if (keyCode == UP)
     {
-
-      scrollSpeed++;
-      if (scrollSpeed > 30) scrollSpeed = 30;
+      if(player.isJumping()) return;
+      speedUp();
     }
     if (keyCode == DOWN)
     {
-      scrollSpeed--;
-      if (scrollSpeed < 0) scrollSpeed = 0;
+      if(player.isJumping()) return;
+      speedDown();
     }
   }
 }
 
+void speedDown(){
+ scrollSpeed--; 
+ if (scrollSpeed < 0) scrollSpeed = 0;
+}
 
+void speedUp(){
+ scrollSpeed++; 
+ if (scrollSpeed > 30) scrollSpeed = 30;
+}
 
 void cleanUp() {
   for (int i = 0; i < jumps.size(); i++) {

@@ -1,15 +1,15 @@
 
 
-public class LargeRock implements Solid{
+public class LargeRock extends Solid{
   
  public LargeRock(PImage image){
-  
+  super(image);
   
  }
 
-void draw(){
- 
-} 
+  void draw(){
+  
+  } 
   
   
 }
