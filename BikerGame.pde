@@ -1,37 +1,39 @@
 import java.util.*;
 
-PImage Backgrounds[] = new PImage[4] ;
-PImage jumpImage;
-PFont pointFont;
-PFont textFont;
-int BackgroundYs[] = new int[4];
-ArrayList<PImage> BackgroundList = new ArrayList<PImage>();
+PImage Backgrounds[] = new PImage[4] ;//Inneholder bakgrunnsbilder
+int BackgroundYs[] = new int[4]; //Inneholder Y posisjonen til bakgrunnene
+
+PImage jumpImage;//Bilde av hoppet
+PFont pointFont;//Fonten til poeng
+PFont textFont; //Font til resten
+
+ArrayList<PImage> BackgroundList = new ArrayList<PImage>();//Liste over alle mulige bakgrunnsbilder
 Random r = new Random();
 
-ArrayList<Jump> jumps = new ArrayList<Jump>();
+ArrayList<Jump> jumps = new ArrayList<Jump>(); //Alle hoppene
 
 
-static int scrollSpeed = 0;
+static int scrollSpeed = 0;//Hvor fort bakgrunnen scroller
 int scrollCount;
 
 int bakgroundY = 0;
-int imageHeight = 720;
+int imageHeight = 720;//Høyden på en bakgrunn
 
-Player player;
-Tv tv;
+Player player; //Spilleren
+Tv tv;        //Tven nede til venstre
 
 
 
 void setup() {
 
   jumpImage      = loadImage("Images/Ramp.png");
-  ; 
+   
   Backgrounds[0] = loadImage("Images/Bakgrunn_Bridge.png");
   Backgrounds[1] = loadImage("Images/Bakgrunn.png");
   Backgrounds[2] = Backgrounds[0];
   Backgrounds[3] = Backgrounds[1];
 
-  BackgroundList.add(Backgrounds[1]);
+  BackgroundList.add(Backgrounds[1]);//Fyller bakgrunnslista
   BackgroundList.add(Backgrounds[1]);
   BackgroundList.add(Backgrounds[1]);
   BackgroundList.add(Backgrounds[1]);
@@ -41,20 +43,20 @@ void setup() {
   BackgroundList.add(Backgrounds[0]);
   BackgroundList.add(Backgrounds[0]);
 
-  BackgroundYs[0] = 0;
+  BackgroundYs[0] = 0;//Setter initiell posisjon på bakgrunnene
   BackgroundYs[1] = -720;
   BackgroundYs[2] = -1440;
   BackgroundYs[3] = -2160;
 
-  pointFont = loadFont("Algerian-48.vlw");
+  pointFont = loadFont("Algerian-48.vlw");//Laster inn fonter
   textFont = loadFont("Aharoni-Bold-32.vlw");
 
-  player = new Player();
-  tv = new Tv(this);
-  frameRate(30);
+  player = new Player();//oppretter spilleren
+  tv = new Tv(this);//oppretter tven
+  frameRate(30);//Setter framerate til 30, sånn at det blir stabilt
 
-  textFont(pointFont, 48);
-  size(1280, 720, P3D);
+  textFont(pointFont, 48);//Setter hovedtekstfonten
+  size(1280, 720, P3D);//Setter oppløsning og grafikkmotor
 }
 
 
@@ -75,36 +77,44 @@ void draw() {
   /** Diverse spilltekniske skjekker, krasj, hopp, osv**/
 
 
-  checkForJumps();
+  checkForJumps();//Sjekker om spillern skal hoppe
+  //TODO legg til checker for alt, enemies, collisions, osv
+
 
   /** Beregning av poeng **/
-  if (scrollSpeed > 0 ) {
-    scrollCount++;
-  }
+  /*if (scrollSpeed > 0 ) {
+    scrollCount++;  //Hadde ingen innvirkning, vet ikke hva den er til....
+  }*/
   if (frameCount % 10 == 0) {
     player.addScore(scrollSpeed/5.0);
   }
 
   /**Her kan vi spawne nye entiteter**/
-  if (scrollSpeed != 0) {
-    if (r.nextInt(40) == 10) {
-      jumps.add(new Jump(r.nextInt(780) + 220, jumpImage));
+  if (scrollSpeed >= 3) {// Spawner kun hopp derson hastigheten er over 3
+    if (r.nextInt(80) == 10) {//Spavenr kun hopp med 1/80 dels sansynelighet
+      jumps.add(new Jump(r.nextInt(780) + 220, jumpImage));//x posisjonen til hoppet blir valgt random (innenfor kjørbart område)
     }
   }
 
 
+//TODO spawn fiender, spawn hindringer osv
+
   /** Gjør all tegning**/
   for (int i = 0; i < jumps.size(); i++) {
-    jumps.get(i).draw();
+    jumps.get(i).draw();//tegner alle hopp
   }
 
-  player.draw();
+  //TODO tegn fiender, hindringer osv
+
+  player.draw();//Tegner spiller
   tv.draw();
 
 
 
 
 
+
+//Skriver vi score, text osv
   textFont(pointFont);
   text("" + (int)player.score, width - 160, 50);
   text("" + scrollSpeed, width - 160, height-50);
@@ -166,14 +176,17 @@ void speedUp(){
 }
 
 void cleanUp() {
-  for (int i = 0; i < jumps.size(); i++) {
+  for (int i = 0; i < jumps.size(); i++) { //Fjerner alle hopp som er utenfor
     if (jumps.get(i).y > height +100) {
       jumps.remove(i);
     }
   }
+  
+  //TODO fjern fiender, hindringer osv
 }
 
 
+//sjekker om spillern skal hoppe
 void checkForJumps() {
   for (int i = 0; i < jumps.size(); i++) {
     Jump j = jumps.get(i);

@@ -4,8 +4,8 @@ public class Jump{
  
  PImage image;
   
-  int x, y;
-  int w, h;
+  int x, y; //koordinater
+  int w, h;//bredde høyde
  public Jump(int x, PImage image){
   
   this.x = x;
@@ -20,12 +20,8 @@ public class Jump{
   
   
  void draw(){
-  
-   
    image(image, x,y);
-   
    y += scrollSpeed;
-   
  } 
   
   
