@@ -4,6 +4,12 @@ import processing.serial.*;
 PImage Backgrounds[] = new PImage[4] ;//Inneholder bakgrunnsbilder
 int BackgroundYs[] = new int[4]; //Inneholder Y posisjonen til bakgrunnene
 
+PImage largeRock;
+PImage dirtCrack;
+PImage longRock;
+PImage smallRock;
+PImage tree;
+PImage water;
 PImage jumpImage;//Bilde av hoppet
 PFont pointFont;//Fonten til poeng
 PFont textFont; //Font til resten
@@ -12,7 +18,7 @@ ArrayList<PImage> BackgroundList = new ArrayList<PImage>();//Liste over alle mul
 Random r = new Random();
 
 ArrayList<Jump> jumps = new ArrayList<Jump>(); //Alle hoppene
-
+ArrayList<Solid> solids = new ArrayList<Solid>();
 
 static int scrollSpeed = 0;//Hvor fort bakgrunnen scroller
 int scrollCount;
@@ -31,7 +37,12 @@ Fullscreen f = new Fullscreen();
 void setup() {
 
   jumpImage      = loadImage("Images/Ramp.png");
-
+  largeRock      = loadImage("Images/Rock_Large.png");
+  dirtCrack      = loadImage("Images/DirtCrack.png");
+  longRock       = loadImage("Images/Rock_Long.png"); 
+  smallRock      = loadImage("Images/Rock_Small.png");
+  tree           = loadImage("Images/TreeBroken.png"); 
+  water          = loadImage("Images/Waterpool.png");
   Backgrounds[0] = loadImage("Images/Bakgrunn_Bridge.png");
   Backgrounds[1] = loadImage("Images/Bakgrunn.png");
   Backgrounds[2] = Backgrounds[0];
@@ -101,6 +112,8 @@ void draw() {
   }
   /** Diverse spilltekniske skjekker, krasj, hopp, osv**/
 
+  checkForSolidChrash();
+
 
   checkForJumps();//Sjekker om spillern skal hoppe
   //TODO legg til checker for alt, enemies, collisions, osv
@@ -119,7 +132,29 @@ void draw() {
     if (r.nextInt(80) == 10) {//Spavenr kun hopp med 1/80 dels sansynelighet
       jumps.add(new Jump(r.nextInt(780) + 220, jumpImage));//x posisjonen til hoppet blir valgt random (innenfor kjørbart område)
     }
+
+    if (r.nextInt(200) == 37) {
+      solids.add(new LargeRock(largeRock));
+    }  
+
+    if (r.nextInt(200) == 37) {
+      solids.add(new RockSmall(smallRock));
+    }  
+    if (r.nextInt(200) == 37) {
+      solids.add(new RockLong(longRock));
+    }  
+    if (r.nextInt(200) == 37) {
+      solids.add(new DirtCrack(dirtCrack));
+    }  
+    if (r.nextInt(200) == 37) {
+      solids.add(new Water(water));
+    } 
+    if (r.nextInt(200) == 37) {
+      solids.add(new Tree(tree));
+    }
   }
+
+
 
 
   //TODO spawn fiender, spawn hindringer osv
@@ -130,6 +165,10 @@ void draw() {
   }
 
   //TODO tegn fiender, hindringer osv
+
+  for (int i= 0; i < solids.size(); i++) {
+    solids.get(i).draw();
+  }
 
   player.draw();//Tegner spiller
   tv.draw();
@@ -188,9 +227,14 @@ void keyPressed()
       speedDown();
     }
   }
-  if(key == 'f'){
-    
+  if (key == 'f') {
     f.toggle(this);
+  }
+  if (key == 'g') {
+    player.images = player.girlImages;
+  }
+  if (key == 'b') {
+    player.images = player.boyImages;
   }
 }
 
@@ -210,7 +254,11 @@ void cleanUp() {
       jumps.remove(i);
     }
   }
-
+  for (int i = 0; i < solids.size(); i++) { //Fjerner alle hopp som er utenfor
+    if (solids.get(i).y > height +solids.get(i).h+50) {
+      solids.remove(i);
+    }
+  }
   //TODO fjern fiender, hindringer osv
 }
 
@@ -220,7 +268,7 @@ void checkForJumps() {
   for (int i = 0; i < jumps.size(); i++) {
     Jump j = jumps.get(i);
     if (j.x +50 < player.x + player.w && j.x + j.w -50 > player.x) {
-      if (j.y < player.y + player.h && j.y + j.h > player.y) {
+      if (j.y < player.y + player.h && j.y + (j.h/2) > player.y) {
 
         player.jump();
       }
@@ -232,5 +280,23 @@ void checkForJumps() {
 int map(int x, int in_min, int in_max, int out_min, int out_max)
 {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+
+void checkForSolidChrash() {
+  for (int i = 0; i < solids.size(); i++) { //Fjerner alle hopp som er utenfor
+    if (solids.get(i).y + 50 < player.y + player.h &&  solids.get(i).y + solids.get(i).h -50 > player.y) {
+      if (solids.get(i).x < player.x + player.w && solids.get(i).x + solids.get(i).w > player.x) {
+        if (!player.safe && !player.isJumping()) {
+          player.life--;
+          player.safeleft  = 80;
+          player.safe = true;
+          player.safedraw = false;
+          scrollSpeed = 5;
+          player.score -= 50;
+        }
+      }
+    }
+  }
 }
 
