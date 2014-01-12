@@ -1,61 +1,89 @@
 public class Player {
   PImage playerImage;
   PImage lifeImage;
-  boolean goLeft, goRight;
+  PImage[] images = new PImage[8];
+
+  boolean goLeft, goRight, turn;
   int x, y;
   int life;
   int w, h;
-  
+
   double score;
-  
+
   private boolean jump = false;
   private int jumpdir = 1;   
   private int jumpScale = 1;
   private int jumpSpeeder;
-  
+  int dist = 0;
+
+  int imageRot = 0;
+  int imgAdder = 0;
   public Player() {
-    playerImage = loadImage("Images/Character.png");
+    //    playerImage = loadImage("Images/Character.png");
     lifeImage = loadImage("Images/Helmet.png");
-    x = 740  - (playerImage.width);
 
-    y = 680 - (int)(playerImage.height);
+    images[0] = loadImage("Images/01_BoyAnim.png");
+    images[1] = loadImage("Images/02_BoyAnim.png");
+    images[2] = loadImage("Images/03_BoyAnim.png");
+    images[3] = loadImage("Images/04_BoyAnim.png");
+    images[4] = loadImage("Images/05_BoyAnim.png");
+    images[5] = loadImage("Images/06_BoyAnim.png");
+    images[6] = loadImage("Images/07_BoyAnim.png");
+    images[7] = loadImage("Images/08_BoyAnim.png");
 
-    w = playerImage.width;
-    h = playerImage.height;
+    x = 740  - (images[0].width);
 
-    life = 3;    
+    y = 680 - (int)(images[0].height);
+
+    w = images[0].width;
+    h = images[0].height;
+
+    life = 3;
   }
 
   public void draw() {
-    
-    int dist = 2 * (scrollSpeed/2);
-    if(!jump){
-      if (goRight) {       
-        x += dist;
-        if (dist == 0 && scrollSpeed > 0) {
-          x+= 1;
-        }
-        if (x > 1060 - (playerImage.width)) {
-          x = 1060 - (playerImage.width);
-        }
-      }
-      else if (goLeft) {
-        x -= dist;
-        if (dist == 0 && scrollSpeed > 0) {
-          x-= 1;
-        }
-        if (x < 220) {
-          x = 220;
+
+    //dist = 2 * (scrollSpeed/2);
+    if (!jump) {
+      if (turn) {
+        if (scrollSpeed != 0) {
+
+          x += dist * (scrollSpeed/4);
+          if (x > 1060 - (images[0].width)) {
+            x = 1060 - (images[0].width);
+          }
+          if (x < 220) {
+            x = 220;
+          }
         }
       }
+
+      /*if (goRight) {       
+       x += dist;
+       if (dist == 0 && scrollSpeed > 0) {
+       x+= 1;
+       }
+       if (x > 1060 - (playerImage.width)) {
+       x = 1060 - (playerImage.width);
+       }
+       }
+       else if (goLeft) {
+       x -= dist;
+       if (dist == 0 && scrollSpeed > 0) {
+       x-= 1;
+       }
+       if (x < 220) {
+       x = 220;
+       }
+       }*/
     }
-    
+
     if (jump) {
-      if(scrollSpeed > 5 && jumpSpeeder % 6 == 0){
+      if (scrollSpeed > 5 && jumpSpeeder % 6 == 0) {
         speedDown();
       }
       jumpSpeeder++;
-      image(playerImage, x, y, (playerImage.width+jumpScale), (playerImage.height+jumpScale));
+      image(images[imageRot], x, y, (images[0].width+jumpScale), (images[0].height+jumpScale));
       jumpScale += jumpdir;
       if (jumpScale == 30) {
         jumpdir = -1;
@@ -66,9 +94,17 @@ public class Player {
       }
     }
     else {
-      image(playerImage, x, y);
+      imgAdder += scrollSpeed;
+      if (imgAdder >= 40) {
+        imageRot++;
+        if (imageRot == 8) {
+          imageRot = 0;
+        }
+        imgAdder = 0;
+      }
+      image(images[imageRot], x, y);
     }
-    
+
     for (int i = 1; i <= life; i++) {
       image(lifeImage, (70 * i) - 60, 20);
     }
@@ -81,14 +117,14 @@ public class Player {
     return jump;
   }
 
-  void addScore(double a){
-   score += a; 
+  void addScore(double a) {
+    score += a;
   }
 
   void jump() {
     if (jump == false && scrollSpeed >= 4) {
       jump = true;    
-     jumpSpeeder = 0;   
+      jumpSpeeder = 0;   
       addScore(50.0);
     }
   }

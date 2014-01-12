@@ -1,4 +1,5 @@
 import java.util.*;
+import processing.serial.*; 
 
 PImage Backgrounds[] = new PImage[4] ;//Inneholder bakgrunnsbilder
 int BackgroundYs[] = new int[4]; //Inneholder Y posisjonen til bakgrunnene
@@ -22,12 +23,15 @@ int imageHeight = 720;//Høyden på en bakgrunn
 Player player; //Spilleren
 Tv tv;        //Tven nede til venstre
 
-
+Serial myPort; 
+int val; 
+String input;
+Fullscreen f = new Fullscreen();
 
 void setup() {
 
   jumpImage      = loadImage("Images/Ramp.png");
-   
+
   Backgrounds[0] = loadImage("Images/Bakgrunn_Bridge.png");
   Backgrounds[1] = loadImage("Images/Bakgrunn.png");
   Backgrounds[2] = Backgrounds[0];
@@ -57,6 +61,9 @@ void setup() {
 
   textFont(pointFont, 48);//Setter hovedtekstfonten
   size(1280, 720, P3D);//Setter oppløsning og grafikkmotor
+
+  myPort = new Serial(this, Serial.list()[0], 9600);
+  myPort.clear();
 }
 
 
@@ -74,6 +81,24 @@ void draw() {
     }
   }
 
+
+  if ( myPort.available() > 0) {
+    try {
+      input = myPort.readStringUntil(10);
+      if (input!=null) {
+        if (input.contains("x")) {
+          input = input.replace("x", "");
+          input = trim(input);
+          int inX = Integer.parseInt(input);
+          inX = map(inX, -100, 100, -10, 10);
+          player.turn = true;
+          player.dist = inX;
+        }
+      }
+    }
+    catch(Exception e) {
+    }
+  }
   /** Diverse spilltekniske skjekker, krasj, hopp, osv**/
 
 
@@ -83,8 +108,8 @@ void draw() {
 
   /** Beregning av poeng **/
   /*if (scrollSpeed > 0 ) {
-    scrollCount++;  //Hadde ingen innvirkning, vet ikke hva den er til....
-  }*/
+   scrollCount++;  //Hadde ingen innvirkning, vet ikke hva den er til....
+   }*/
   if (frameCount % 10 == 0) {
     player.addScore(scrollSpeed/5.0);
   }
@@ -97,7 +122,7 @@ void draw() {
   }
 
 
-//TODO spawn fiender, spawn hindringer osv
+  //TODO spawn fiender, spawn hindringer osv
 
   /** Gjør all tegning**/
   for (int i = 0; i < jumps.size(); i++) {
@@ -114,12 +139,12 @@ void draw() {
 
 
 
-//Skriver vi score, text osv
+  //Skriver vi score, text osv
   textFont(pointFont);
   text("" + (int)player.score, width - 160, 50);
   text("" + scrollSpeed, width - 160, height-50);
   textFont(textFont);
-   text("km/t", width - 100, height-50);
+  text("km/t", width - 100, height-50);
   /** Rydder opp og sletter entiteter**/
   cleanUp();
 }
@@ -154,25 +179,29 @@ void keyPressed()
 
     if (keyCode == UP)
     {
-      if(player.isJumping()) return;
+      if (player.isJumping()) return;
       speedUp();
     }
     if (keyCode == DOWN)
     {
-      if(player.isJumping()) return;
+      if (player.isJumping()) return;
       speedDown();
     }
   }
+  if(key == 'f'){
+    
+    f.toggle(this);
+  }
 }
 
-void speedDown(){
- scrollSpeed--; 
- if (scrollSpeed < 0) scrollSpeed = 0;
+void speedDown() {
+  scrollSpeed--; 
+  if (scrollSpeed < 0) scrollSpeed = 0;
 }
 
-void speedUp(){
- scrollSpeed++; 
- if (scrollSpeed > 30) scrollSpeed = 30;
+void speedUp() {
+  scrollSpeed++; 
+  if (scrollSpeed > 30) scrollSpeed = 30;
 }
 
 void cleanUp() {
@@ -181,7 +210,7 @@ void cleanUp() {
       jumps.remove(i);
     }
   }
-  
+
   //TODO fjern fiender, hindringer osv
 }
 
@@ -197,5 +226,11 @@ void checkForJumps() {
       }
     }
   }
+}
+
+
+int map(int x, int in_min, int in_max, int out_min, int out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
