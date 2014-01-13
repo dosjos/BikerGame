@@ -1,6 +1,9 @@
 import java.util.*;
 import processing.serial.*; 
+import ddf.minim.*;
 
+AudioSample bell;
+Minim minim;
 PImage Backgrounds[] = new PImage[4] ;//Inneholder bakgrunnsbilder
 int BackgroundYs[] = new int[4]; //Inneholder Y posisjonen til bakgrunnene
 
@@ -14,11 +17,14 @@ PImage jumpImage;//Bilde av hoppet
 PFont pointFont;//Fonten til poeng
 PFont textFont; //Font til resten
 
+Menu menu = new Menu();
+
 ArrayList<PImage> BackgroundList = new ArrayList<PImage>();//Liste over alle mulige bakgrunnsbilder
 Random r = new Random();
 
 ArrayList<Jump> jumps = new ArrayList<Jump>(); //Alle hoppene
 ArrayList<Solid> solids = new ArrayList<Solid>();
+ArrayList<Supersonic> sonics = new ArrayList<Supersonic>();
 
 static int scrollSpeed = 0;//Hvor fort bakgrunnen scroller
 int scrollCount;
@@ -26,13 +32,18 @@ int scrollCount;
 int bakgroundY = 0;
 int imageHeight = 720;//Høyden på en bakgrunn
 
+int time;
+
 Player player; //Spilleren
 Tv tv;        //Tven nede til venstre
+
+int gamestate = 0;
 
 Serial myPort; 
 int val; 
 String input;
 Fullscreen f = new Fullscreen();
+
 
 void setup() {
 
@@ -63,6 +74,8 @@ void setup() {
   BackgroundYs[2] = -1440;
   BackgroundYs[3] = -2160;
 
+  minim = new Minim(this);
+  bell = minim.loadSample("Sounds/bell.wav", 2048);
   pointFont = loadFont("Algerian-48.vlw");//Laster inn fonter
   textFont = loadFont("Aharoni-Bold-32.vlw");
 
@@ -72,14 +85,22 @@ void setup() {
 
   textFont(pointFont, 48);//Setter hovedtekstfonten
   size(1280, 720, P3D);//Setter oppløsning og grafikkmotor
-
+try{
   myPort = new Serial(this, Serial.list()[0], 9600);
   myPort.clear();
+}catch(Exception e){}
 }
 
 
 
 void draw() {
+  if(gamestate == 0){
+    background(0, 0, 0);
+    image(Backgrounds[1], 0, 0);
+    menu.draw();
+  }
+  
+  if(gamestate == 1){
   /** Tegning og oppdatering av bakgrunn**/
   background(0, 0, 0);
   for (int i = 0; i < Backgrounds.length; i++) {
@@ -92,9 +113,9 @@ void draw() {
     }
   }
 
-
+try {
   if ( myPort.available() > 0) {
-    try {
+    
       input = myPort.readStringUntil(10);
       if (input!=null) {
         if (input.contains("x")) {
@@ -107,9 +128,9 @@ void draw() {
         }
       }
     }
-    catch(Exception e) {
-    }
   }
+  catch(Exception e) {}
+    
   /** Diverse spilltekniske skjekker, krasj, hopp, osv**/
 
   checkForSolidChrash();
@@ -170,8 +191,7 @@ void draw() {
     solids.get(i).draw();
   }
 
-  player.draw();//Tegner spiller
-  tv.draw();
+
 
 
 
@@ -179,13 +199,37 @@ void draw() {
 
 
   //Skriver vi score, text osv
+  fill(255);
+  stroke(0);
   textFont(pointFont);
   text("" + (int)player.score, width - 160, 50);
   text("" + scrollSpeed, width - 160, height-50);
   textFont(textFont);
   text("km/t", width - 100, height-50);
+  
+  //DRAW SHOTS
+  for (int i= 0; i < sonics.size(); i++) {
+    sonics.get(i).draw();
+  }
+
+  player.draw();//Tegner spiller
+  tv.draw();
+  if(player.life <= 0){
+   gamestate = 2;
+   time = millis();
+  }  
+  
   /** Rydder opp og sletter entiteter**/
   cleanUp();
+  }//END GAMESTATE == 1
+  if(gamestate == 2){
+image(Backgrounds[1], 0, 0);
+    
+    text("" + (time - (millis() - 5000)),550,300);
+    if(millis() > time + 5000){
+     gamestate = 0;
+    } 
+  }
 }
 
 /** Lytter på knapper, brukes under utvikling på pc**/
@@ -218,6 +262,13 @@ void keyPressed()
 
     if (keyCode == UP)
     {
+      if(gamestate == 0){
+       gamestate = 1; 
+       player = new Player();
+       solids = new ArrayList<Solid>();
+       jumps = new ArrayList<Jump>();
+       sonics = new ArrayList<Supersonic>();
+      }
       if (player.isJumping()) return;
       speedUp();
     }
@@ -226,6 +277,13 @@ void keyPressed()
       if (player.isJumping()) return;
       speedDown();
     }
+    
+    
+    
+  }
+  if(key == ' '){
+   sonics.add(new Supersonic(player.x + (player.w / 2), player.y + 20));
+   bell.trigger();
   }
   if (key == 'f') {
     f.toggle(this);
@@ -259,7 +317,14 @@ void cleanUp() {
       solids.remove(i);
     }
   }
+  for (int i = 0; i < sonics.size(); i++) { //Fjerner alle hopp som er utenfor
+    if (sonics.get(i).h > width*2 ) {
+      sonics.remove(i);
+    }
+  }
+  
   //TODO fjern fiender, hindringer osv
+
 }
 
 
