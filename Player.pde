@@ -10,7 +10,7 @@ public class Player {
   int x, y;
   int life;
   int w, h;
-
+  int flames;
   double score;
 
   private boolean jump = false;
@@ -60,6 +60,7 @@ public class Player {
     h = images[0].height;
 
     life = 3;
+    flames = 800;
   }
 
   public void draw() {
@@ -78,9 +79,9 @@ public class Player {
           }
         }
       }
-
-     /* if (goRight) {       
-        x += dist;
+try{
+      if (goRight) {       
+        x += 5;
         if (dist == 0 && scrollSpeed > 0) {
           x+= 1;
         }
@@ -89,14 +90,15 @@ public class Player {
         }
       }
       else if (goLeft) {
-        x -= dist;
+        x -= 5;
         if (dist == 0 && scrollSpeed > 0) {
           x-= 1;
         }
         if (x < 220) {
           x = 220;
         }
-      }*/
+      }
+          }catch(Exception e){}
     }
 
     if (jump) {

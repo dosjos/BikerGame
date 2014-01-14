@@ -7,6 +7,8 @@ Minim minim;
 PImage Backgrounds[] = new PImage[4] ;//Inneholder bakgrunnsbilder
 int BackgroundYs[] = new int[4]; //Inneholder Y posisjonen til bakgrunnene
 
+PImage[] flames = new PImage[4];
+PImage[] bushes = new PImage[3];
 PImage largeRock;
 PImage dirtCrack;
 PImage longRock;
@@ -16,6 +18,8 @@ PImage water;
 PImage jumpImage;//Bilde av hoppet
 PFont pointFont;//Fonten til poeng
 PFont textFont; //Font til resten
+PImage[] burningBush = new PImage[8];
+
 
 Menu menu = new Menu();
 
@@ -44,9 +48,27 @@ int val;
 String input;
 Fullscreen f = new Fullscreen();
 
+long start, end;
+boolean flame = false;
+int flameFrame = 0;
 
 void setup() {
 
+  burningBush[0] = loadImage("Images/burningbush.png");
+  burningBush[1] = loadImage("Images/SmokePile.png");
+  burningBush[2] = loadImage("Images/SmokePile02.png");
+  burningBush[3] = loadImage("Images/SmokePile03.png");
+  burningBush[4] = loadImage("Images/SmokePile04.png");
+  burningBush[5] = loadImage("Images/SmokePile05.png");
+  burningBush[6] = loadImage("Images/SmokePile06.png");
+  burningBush[7] = loadImage("Images/SmokePile07.png");
+  bushes[0]      = loadImage("Images/Bush.png");
+  bushes[1]      = loadImage("Images/Bush02.png");
+  bushes[2]      = loadImage("Images/Bush03.png");
+  flames[0]      = loadImage("Images/1_FlameThrower_04.png");
+  flames[1]      = loadImage("Images/2_FlameThrower_02.png");
+  flames[2]      = loadImage("Images/3_FlameThrower_03.png");
+  flames[3]      = loadImage("Images/4_FlameThrower_01.png");
   jumpImage      = loadImage("Images/Ramp.png");
   largeRock      = loadImage("Images/Rock_Large.png");
   dirtCrack      = loadImage("Images/DirtCrack.png");
@@ -81,154 +103,213 @@ void setup() {
 
   player = new Player();//oppretter spilleren
   tv = new Tv(this);//oppretter tven
-  frameRate(30);//Setter framerate til 30, sånn at det blir stabilt
+  frameRate(31);//Setter framerate til 30, sånn at det blir stabilt
 
   textFont(pointFont, 48);//Setter hovedtekstfonten
-  size(1280, 720, P3D);//Setter oppløsning og grafikkmotor
-try{
-  myPort = new Serial(this, Serial.list()[0], 9600);
-  myPort.clear();
-}catch(Exception e){}
+  size(1280, 720, P2D);//Setter oppløsning og grafikkmotor
+  try {
+    myPort = new Serial(this, Serial.list()[0], 9600);
+    myPort.clear();
+  }
+  catch(Exception e) {
+  }
 }
 
-
-
-void draw() {
-  if(gamestate == 0){
-    background(0, 0, 0);
-    image(Backgrounds[1], 0, 0);
-    menu.draw();
-  }
-  
-  if(gamestate == 1){
-  /** Tegning og oppdatering av bakgrunn**/
-  background(0, 0, 0);
-  for (int i = 0; i < Backgrounds.length; i++) {
-    image(Backgrounds[i], 0, BackgroundYs[i]);
-    BackgroundYs[i] += scrollSpeed;
-
-    if (BackgroundYs[i] >= imageHeight) {
-      BackgroundYs[i] -= imageHeight*3;
-      Backgrounds[i] = BackgroundList.get(r.nextInt(BackgroundList.size()));
-    }
-  }
-
-try {
-  if ( myPort.available() > 0) {
-    
-      input = myPort.readStringUntil(10);
-      if (input!=null) {
-        if (input.contains("x")) {
-          input = input.replace("x", "");
-          input = trim(input);
-          int inX = Integer.parseInt(input);
-          inX = map(inX, -100, 100, -10, 10);
-          player.turn = true;
-          player.dist = inX;
+void serialEvent(Serial p) { 
+  try {
+    input = p.readStringUntil(10);
+    if (input!=null) {
+      if (input.contains("x")) {
+        input = input.replace("x", "");
+        input = trim(input);
+        int inX = Integer.parseInt(input);
+        inX = map(inX, -100, 100, -10, 10);
+        player.turn = true;
+        player.dist = inX;
+      }
+      else if (input.contains("s")) {
+        if (gamestate == 0) {
+          gamestate = 1;
+        }
+        else if (gamestate == 1) {
+          sonics.add(new Supersonic(player.x + (player.w / 2), player.y + 20));
+          bell.trigger();
+        }
+      }
+      else if (input.contains("z")) {
+        if (input.contains("1")) {
+          //SKYT FLAMME
+          flame = true;
+        }
+        else if (input.contains("0")) {
+          //STANS FLAMME
+          flame = false;
         }
       }
     }
   }
-  catch(Exception e) {}
-    
-  /** Diverse spilltekniske skjekker, krasj, hopp, osv**/
+  catch(Exception e) {
+  }
+}
 
-  checkForSolidChrash();
-
-
-  checkForJumps();//Sjekker om spillern skal hoppe
-  //TODO legg til checker for alt, enemies, collisions, osv
+void draw() {
 
 
-  /** Beregning av poeng **/
-  /*if (scrollSpeed > 0 ) {
-   scrollCount++;  //Hadde ingen innvirkning, vet ikke hva den er til....
-   }*/
-  if (frameCount % 10 == 0) {
-    player.addScore(scrollSpeed/5.0);
+  if (gamestate == 0) {
+    background(0, 0, 0);
+    image(Backgrounds[1], 0, 0, 1280, 720);
+    menu.draw();
   }
 
-  /**Her kan vi spawne nye entiteter**/
-  if (scrollSpeed >= 3) {// Spawner kun hopp derson hastigheten er over 3
-    if (r.nextInt(80) == 10) {//Spavenr kun hopp med 1/80 dels sansynelighet
-      jumps.add(new Jump(r.nextInt(780) + 220, jumpImage));//x posisjonen til hoppet blir valgt random (innenfor kjørbart område)
+  else if (gamestate == 1) {
+    /** Tegning og oppdatering av bakgrunn**/
+    background(0, 0, 0);
+    for (int i = 0; i < Backgrounds.length; i++) {
+      if (BackgroundYs[i] > -imageHeight && BackgroundYs[i] < imageHeight) {
+        //   println(BackgroundYs[i]);
+        image(Backgrounds[i], 0, BackgroundYs[i], 1280, 720);
+      }
+      BackgroundYs[i] += scrollSpeed;
+
+      if (BackgroundYs[i] >= imageHeight) {
+        BackgroundYs[i] -= imageHeight*3;
+        Backgrounds[i] = BackgroundList.get(r.nextInt(BackgroundList.size()));
+      }
     }
 
-    if (r.nextInt(200) == 37) {
-      solids.add(new LargeRock(largeRock));
-    }  
 
-    if (r.nextInt(200) == 37) {
-      solids.add(new RockSmall(smallRock));
-    }  
-    if (r.nextInt(200) == 37) {
-      solids.add(new RockLong(longRock));
-    }  
-    if (r.nextInt(200) == 37) {
-      solids.add(new DirtCrack(dirtCrack));
-    }  
-    if (r.nextInt(200) == 37) {
-      solids.add(new Water(water));
-    } 
-    if (r.nextInt(200) == 37) {
-      solids.add(new Tree(tree));
+    //try {
+    //  if ( myPort.available() > 0) {
+
+    //    }
+    //  }
+    //  catch(Exception e) {}
+
+    /** Diverse spilltekniske skjekker, krasj, hopp, osv**/
+
+    checkForSolidChrash();
+
+
+    checkForJumps();//Sjekker om spillern skal hoppe
+    //TODO legg til checker for alt, enemies, collisions, osv
+
+
+    /** Beregning av poeng **/
+    /*if (scrollSpeed > 0 ) {
+     scrollCount++;  //Hadde ingen innvirkning, vet ikke hva den er til....
+     }*/
+    if (frameCount % 10 == 0) {
+      player.addScore(scrollSpeed/5.0);
     }
-  }
+
+    /**Her kan vi spawne nye entiteter**/
+    if (scrollSpeed >= 3) {// Spawner kun hopp derson hastigheten er over 3
+      if (r.nextInt(80) == 10) {//Spavenr kun hopp med 1/80 dels sansynelighet
+        jumps.add(new Jump(r.nextInt(780) + 220, jumpImage));//x posisjonen til hoppet blir valgt random (innenfor kjørbart område)
+      }
+
+      if (r.nextInt(200) == 37) {
+        solids.add(new LargeRock(largeRock));
+      }  
+
+      if (r.nextInt(200) == 37) {
+        solids.add(new RockSmall(smallRock));
+      }  
+      if (r.nextInt(200) == 37) {
+        solids.add(new RockLong(longRock));
+      }  
+      if (r.nextInt(200) == 37) {
+        solids.add(new DirtCrack(dirtCrack));
+      }  
+      if (r.nextInt(200) == 37) {
+        solids.add(new Water(water));
+      } 
+      if (r.nextInt(200) == 37) {
+        solids.add(new Tree(tree));
+      }
+      if (r.nextInt(38) == 37) {
+        solids.add(new Bush(bushes[r.nextInt(3)]));
+      }
+    }
 
 
 
 
-  //TODO spawn fiender, spawn hindringer osv
+    //TODO spawn fiender, spawn hindringer osv
 
-  /** Gjør all tegning**/
-  for (int i = 0; i < jumps.size(); i++) {
-    jumps.get(i).draw();//tegner alle hopp
-  }
+    /** Gjør all tegning**/
+    for (int i = 0; i < jumps.size(); i++) {
+      jumps.get(i).draw();//tegner alle hopp
+    }
 
-  //TODO tegn fiender, hindringer osv
+    //TODO tegn fiender, hindringer osv
 
-  for (int i= 0; i < solids.size(); i++) {
-    solids.get(i).draw();
-  }
-
-
+    for (int i= 0; i < solids.size(); i++) {
+      solids.get(i).draw();
+    }
 
 
 
 
 
 
-  //Skriver vi score, text osv
-  fill(255);
-  stroke(0);
-  textFont(pointFont);
-  text("" + (int)player.score, width - 160, 50);
-  text("" + scrollSpeed, width - 160, height-50);
-  textFont(textFont);
-  text("km/t", width - 100, height-50);
-  
-  //DRAW SHOTS
-  for (int i= 0; i < sonics.size(); i++) {
-    sonics.get(i).draw();
-  }
 
-  player.draw();//Tegner spiller
-  tv.draw();
-  if(player.life <= 0){
-   gamestate = 2;
-   time = millis();
-  }  
-  
-  /** Rydder opp og sletter entiteter**/
-  cleanUp();
+
+
+    //Skriver vi score, text osv
+    fill(255);
+    stroke(0);
+    textFont(pointFont);
+    text("" + (int)player.score, width - 160, 50);
+    text("" + scrollSpeed, width - 160, height-50);
+    textFont(textFont);
+    text("km/t", width - 100, height-50);
+    text(frameRate + "fps", 75, height -50);
+
+    //TEGNER FLAMMEMENGDE
+    fill(#FF0000);
+    rect(50, 100, 55, 450, 25, 12, 12, 25);
+    fill(#FFA824);
+    rect(50, 550 - map(player.flames, 800, 0, 450, 0), 55, map(player.flames, 800, 0, 450, 0), 25, 12, 12, 25);
+    //DRAW SHOTS
+    fill(#FFFFFF);
+    for (int i= 0; i < sonics.size(); i++) {
+      sonics.get(i).draw();
+    }
+    if (flame && player.flames > 50) {
+      player.flames--;
+      image(flames[flameFrame], (player.x + (player.w/2)) - (flames[flameFrame].width/2)-3, player.y - flames[flameFrame].height+10);
+      flameFrame++;
+      if (flameFrame == 4) {
+        flameFrame = 0;
+      }
+    }else{
+      flame = false;
+    }
+
+    player.draw();//Tegner spiller
+    tv.draw();
+
+
+    if (player.life <= 0) {
+      gamestate = 2;
+      time = millis();
+    }  
+
+    /** Rydder opp og sletter entiteter**/
+    cleanUp();
   }//END GAMESTATE == 1
-  if(gamestate == 2){
-image(Backgrounds[1], 0, 0);
-    
-    text("" + (time - (millis() - 5000)),550,300);
-    if(millis() > time + 5000){
-     gamestate = 0;
-    } 
+  else if (gamestate == 2) {
+    image(Backgrounds[1], 0, 0, 1280, 720);
+
+    textFont(pointFont);
+    text("GAME OVER", width/2 - 150, 150);
+    text("" + (int)player.score + " poeng", width/2 - 150, 250);
+
+    text("Restarter om " + ((time - (millis() - 5000)))/1000 + " sekunder", 350, 550);
+    if (millis() > time + 5000) {
+      gamestate = 0;
+    }
   }
 }
 
@@ -262,12 +343,12 @@ void keyPressed()
 
     if (keyCode == UP)
     {
-      if(gamestate == 0){
-       gamestate = 1; 
-       player = new Player();
-       solids = new ArrayList<Solid>();
-       jumps = new ArrayList<Jump>();
-       sonics = new ArrayList<Supersonic>();
+      if (gamestate == 0) {
+        gamestate = 1; 
+        player = new Player();
+        solids = new ArrayList<Solid>();
+        jumps = new ArrayList<Jump>();
+        sonics = new ArrayList<Supersonic>();
       }
       if (player.isJumping()) return;
       speedUp();
@@ -277,13 +358,10 @@ void keyPressed()
       if (player.isJumping()) return;
       speedDown();
     }
-    
-    
-    
   }
-  if(key == ' '){
-   sonics.add(new Supersonic(player.x + (player.w / 2), player.y + 20));
-   bell.trigger();
+  if (key == ' ') {
+    sonics.add(new Supersonic(player.x + (player.w / 2), player.y + 20));
+    bell.trigger();
   }
   if (key == 'f') {
     f.toggle(this);
@@ -293,6 +371,13 @@ void keyPressed()
   }
   if (key == 'b') {
     player.images = player.boyImages;
+  }
+
+  if (key == 'o') {
+    flame = false;
+  }
+  if (key == 'i') {
+    flame = true;
   }
 }
 
@@ -322,9 +407,8 @@ void cleanUp() {
       sonics.remove(i);
     }
   }
-  
-  //TODO fjern fiender, hindringer osv
 
+  //TODO fjern fiender, hindringer osv
 }
 
 
@@ -352,7 +436,8 @@ void checkForSolidChrash() {
   for (int i = 0; i < solids.size(); i++) { //Fjerner alle hopp som er utenfor
     if (solids.get(i).y + 50 < player.y + player.h &&  solids.get(i).y + solids.get(i).h -50 > player.y) {
       if (solids.get(i).x < player.x + player.w && solids.get(i).x + solids.get(i).w > player.x) {
-        if (!player.safe && !player.isJumping()) {
+        if (!player.safe && !player.isJumping() && 
+        (   (solids.get(i).isBush && !solids.get(i).isBurning) || !solids.get(i).isBush)) {
           player.life--;
           player.safeleft  = 80;
           player.safe = true;
@@ -362,6 +447,16 @@ void checkForSolidChrash() {
         }
       }
     }
+
+    //Skjekk for flammeburn på busk
+    if (flame && solids.get(i).isBush && !solids.get(i).isBurning) {
+      if (solids.get(i).y < player.y - flames[0].height+10 + flames[0].height &&  solids.get(i).y + solids.get(i).h > player.y - flames[0].height+10) {
+        if (solids.get(i).x < (player.x + (player.w/2)) - (flames[0].width/2)-3 + flames[0].width && solids.get(i).x + solids.get(i).w > (player.x + (player.w/2)) - (flames[0].width/2)-3) {
+         solids.get(i).isBurning = true;
+         //TODO sett brennende bilde
+         solids.get(i).image = burningBush[0];
+        }
+      }
+    }
   }
 }
-

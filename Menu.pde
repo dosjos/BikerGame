@@ -8,7 +8,7 @@ public class Menu
   text("Biker Game", 350.0, 100);
   textFont(text);
   text("    Sykkle så langt du kan,", 250, 250);
-  text("        pass deg for hindre", 250, 300);
+  text("        pass deg for hindere", 250, 300);
   text("     Knus isfiender med den ",250, 350);
   text("  supersoniske ringeklokken,", 250, 400);
   text("    Brenn vampyrer og busker",250,450);

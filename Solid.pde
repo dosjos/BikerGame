@@ -1,7 +1,11 @@
 class Solid{
  int x = 0, y = 0, w = 0, h = 0; 
   Random r = new Random();
-  PImage image;
+  public PImage image;
+  boolean isBush;
+  boolean isBurning;
+  int burnimage = 0;
+  int burnimageChange;
   public Solid(PImage image){//Utvides til å ta imot x posisjon
    this.image = image; 
    w = image.width;
@@ -12,6 +16,15 @@ class Solid{
   
  void draw(){
     y+=scrollSpeed;
+    if(isBush && isBurning && burnimage < 7){
+      burnimageChange++;
+      if(burnimageChange == 5){
+       burnimageChange = 0; 
+      burnimage++; 
+     image = burningBush[burnimage] ;
+    }
+      
+    }
     image(image, x,y);
  }
 }
