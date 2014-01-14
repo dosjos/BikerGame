@@ -16,7 +16,7 @@ class Solid{
   
  void draw(){
     y+=scrollSpeed;
-    if(isBush && isBurning && burnimage < 7){
+    if(isBush && isBurning && burnimage < 10){
       burnimageChange++;
       if(burnimageChange == 5){
        burnimageChange = 0; 

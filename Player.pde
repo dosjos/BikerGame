@@ -59,7 +59,7 @@ public class Player {
     w = images[0].width;
     h = images[0].height;
 
-    life = 3;
+    life = 1;
     flames = 800;
   }
 

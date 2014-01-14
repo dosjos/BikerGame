@@ -18,9 +18,9 @@ PImage water;
 PImage jumpImage;//Bilde av hoppet
 PFont pointFont;//Fonten til poeng
 PFont textFont; //Font til resten
-PImage[] burningBush = new PImage[8];
+PImage[] burningBush = new PImage[11];
 
-
+HighScore highScore = new HighScore();
 Menu menu = new Menu();
 
 ArrayList<PImage> BackgroundList = new ArrayList<PImage>();//Liste over alle mulige bakgrunnsbilder
@@ -52,16 +52,27 @@ long start, end;
 boolean flame = false;
 int flameFrame = 0;
 
+public void reset(){
+jumps = new ArrayList<Jump>(); //Alle hoppene
+solids = new ArrayList<Solid>();
+sonics = new ArrayList<Supersonic>();
+player = new Player();
+}
+
+
 void setup() {
 
   burningBush[0] = loadImage("Images/burningbush.png");
-  burningBush[1] = loadImage("Images/SmokePile.png");
-  burningBush[2] = loadImage("Images/SmokePile02.png");
-  burningBush[3] = loadImage("Images/SmokePile03.png");
-  burningBush[4] = loadImage("Images/SmokePile04.png");
-  burningBush[5] = loadImage("Images/SmokePile05.png");
-  burningBush[6] = loadImage("Images/SmokePile06.png");
-  burningBush[7] = loadImage("Images/SmokePile07.png");
+  burningBush[1] = loadImage("Images/Bush_Flame_01.png");
+  burningBush[2] = loadImage("Images/Bush_Flame_02.png");
+  burningBush[3] = loadImage("Images/Bush_Flame_03.png");
+  burningBush[4] = loadImage("Images/SmokePile.png");
+  burningBush[5] = loadImage("Images/SmokePile02.png");
+  burningBush[6] = loadImage("Images/SmokePile03.png");
+  burningBush[7] = loadImage("Images/SmokePile04.png");
+  burningBush[8] = loadImage("Images/SmokePile05.png");
+  burningBush[9] = loadImage("Images/SmokePile06.png");
+  burningBush[10] = loadImage("Images/SmokePile07.png");
   bushes[0]      = loadImage("Images/Bush.png");
   bushes[1]      = loadImage("Images/Bush02.png");
   bushes[2]      = loadImage("Images/Bush03.png");
@@ -101,9 +112,12 @@ void setup() {
   pointFont = loadFont("Algerian-48.vlw");//Laster inn fonter
   textFont = loadFont("Aharoni-Bold-32.vlw");
 
+  highScore.ReadScores();
+
+
   player = new Player();//oppretter spilleren
   tv = new Tv(this);//oppretter tven
-  frameRate(31);//Setter framerate til 30, sånn at det blir stabilt
+  frameRate(40);//Setter framerate til 30, sånn at det blir stabilt
 
   textFont(pointFont, 48);//Setter hovedtekstfonten
   size(1280, 720, P2D);//Setter oppløsning og grafikkmotor
@@ -130,6 +144,7 @@ void serialEvent(Serial p) {
       else if (input.contains("s")) {
         if (gamestate == 0) {
           gamestate = 1;
+          reset();
         }
         else if (gamestate == 1) {
           sonics.add(new Supersonic(player.x + (player.w / 2), player.y + 20));
@@ -139,7 +154,9 @@ void serialEvent(Serial p) {
       else if (input.contains("z")) {
         if (input.contains("1")) {
           //SKYT FLAMME
-          flame = true;
+          if(player.flames >50){
+            flame = true;
+          }
         }
         else if (input.contains("0")) {
           //STANS FLAMME
@@ -159,6 +176,7 @@ void draw() {
     background(0, 0, 0);
     image(Backgrounds[1], 0, 0, 1280, 720);
     menu.draw();
+    highScore.draw();
   }
 
   else if (gamestate == 1) {
@@ -208,23 +226,23 @@ void draw() {
         jumps.add(new Jump(r.nextInt(780) + 220, jumpImage));//x posisjonen til hoppet blir valgt random (innenfor kjørbart område)
       }
 
-      if (r.nextInt(200) == 37) {
+      if (r.nextInt(400) == 37) {
         solids.add(new LargeRock(largeRock));
       }  
 
-      if (r.nextInt(200) == 37) {
+      if (r.nextInt(400) == 37) {
         solids.add(new RockSmall(smallRock));
       }  
-      if (r.nextInt(200) == 37) {
+      if (r.nextInt(400) == 37) {
         solids.add(new RockLong(longRock));
       }  
-      if (r.nextInt(200) == 37) {
+      if (r.nextInt(400) == 37) {
         solids.add(new DirtCrack(dirtCrack));
       }  
-      if (r.nextInt(200) == 37) {
+      if (r.nextInt(400) == 37) {
         solids.add(new Water(water));
       } 
-      if (r.nextInt(200) == 37) {
+      if (r.nextInt(400) == 37) {
         solids.add(new Tree(tree));
       }
       if (r.nextInt(38) == 37) {
@@ -293,6 +311,7 @@ void draw() {
 
     if (player.life <= 0) {
       gamestate = 2;
+      highScore.addScore(player.score);
       time = millis();
     }  
 
@@ -305,10 +324,21 @@ void draw() {
     textFont(pointFont);
     text("GAME OVER", width/2 - 150, 150);
     text("" + (int)player.score + " poeng", width/2 - 150, 250);
+  
+    int plass;
+   plass = highScore.scores.indexOf((int)player.score)+1;
+    if(plass <= 10){
+     text("Gratulerer med " + plass + ". plass", (width/2) - 350, 350); 
+     highScore.lastHighscore = plass;
+    }else{
+     highScore.lastHighscore = -1; 
+    }
 
-    text("Restarter om " + ((time - (millis() - 5000)))/1000 + " sekunder", 350, 550);
-    if (millis() > time + 5000) {
+    text("Restarter om " + ((time - (millis() - 8000)))/1000 + " sekunder", 300, 550);
+    if (millis() > time + 7000) {
       gamestate = 0;
+      player = new Player();
+      reset();
     }
   }
 }
@@ -377,7 +407,9 @@ void keyPressed()
     flame = false;
   }
   if (key == 'i') {
-    flame = true;
+    if(player.flames > 50){
+      flame = true;
+    }
   }
 }
 
