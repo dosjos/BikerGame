@@ -2,6 +2,9 @@ import java.util.*;
 import processing.serial.*; 
 import ddf.minim.*;
 
+import javax.media.opengl.*;
+import processing.opengl.*;
+
 AudioSample bell;
 Minim minim;
 PImage Backgrounds[] = new PImage[4] ;//Inneholder bakgrunnsbilder
@@ -15,6 +18,7 @@ PImage longRock;
 PImage smallRock;
 PImage tree;
 PImage water;
+PImage pump;
 PImage jumpImage;//Bilde av hoppet
 PFont pointFont;//Fonten til poeng
 PFont textFont; //Font til resten
@@ -29,6 +33,8 @@ Random r = new Random();
 ArrayList<Jump> jumps = new ArrayList<Jump>(); //Alle hoppene
 ArrayList<Solid> solids = new ArrayList<Solid>();
 ArrayList<Supersonic> sonics = new ArrayList<Supersonic>();
+ArrayList<ScoreText> texts = new ArrayList<ScoreText>();
+ArrayList<Pump> pumps = new ArrayList<Pump>();
 
 static int scrollSpeed = 0;//Hvor fort bakgrunnen scroller
 int scrollCount;
@@ -52,16 +58,19 @@ long start, end;
 boolean flame = false;
 int flameFrame = 0;
 
-public void reset(){
-jumps = new ArrayList<Jump>(); //Alle hoppene
-solids = new ArrayList<Solid>();
-sonics = new ArrayList<Supersonic>();
-player = new Player();
+public void reset() {
+  jumps = new ArrayList<Jump>(); //Alle hoppene
+  solids = new ArrayList<Solid>();
+  sonics = new ArrayList<Supersonic>();
+  texts = new ArrayList<ScoreText>();
+  pumps = new ArrayList<Pump>();
+  player = new Player();
 }
 
 
 void setup() {
 
+  pump           = loadImage("Images/Pump.png");
   burningBush[0] = loadImage("Images/burningbush.png");
   burningBush[1] = loadImage("Images/Bush_Flame_01.png");
   burningBush[2] = loadImage("Images/Bush_Flame_02.png");
@@ -120,13 +129,14 @@ void setup() {
   frameRate(40);//Setter framerate til 30, sånn at det blir stabilt
 
   textFont(pointFont, 48);//Setter hovedtekstfonten
-  size(1280, 720, P2D);//Setter oppløsning og grafikkmotor
+  size(1280, 720, OPENGL);//Setter oppløsning og grafikkmotor
   try {
     myPort = new Serial(this, Serial.list()[0], 9600);
     myPort.clear();
   }
   catch(Exception e) {
   }
+  smooth();
 }
 
 void serialEvent(Serial p) { 
@@ -154,7 +164,7 @@ void serialEvent(Serial p) {
       else if (input.contains("z")) {
         if (input.contains("1")) {
           //SKYT FLAMME
-          if(player.flames >50){
+          if (player.flames >50) {
             flame = true;
           }
         }
@@ -248,6 +258,9 @@ void draw() {
       if (r.nextInt(38) == 37) {
         solids.add(new Bush(bushes[r.nextInt(3)]));
       }
+      if (r.nextInt(600) == 37) {
+        pumps.add(new Pump(pump));
+      }
     }
 
 
@@ -265,8 +278,12 @@ void draw() {
     for (int i= 0; i < solids.size(); i++) {
       solids.get(i).draw();
     }
-
-
+    for (int i= 0; i < pumps.size(); i++) {
+      pumps.get(i).draw();
+    }
+    for (int i= 0; i < texts.size(); i++) {
+      texts.get(i).draw();
+    }
 
 
 
@@ -286,9 +303,9 @@ void draw() {
 
     //TEGNER FLAMMEMENGDE
     fill(#FF0000);
-    rect(50, 100, 55, 450, 25, 12, 12, 25);
+    rect(30, 100, 55, 450, 25, 12, 12, 25);
     fill(#FFA824);
-    rect(50, 550 - map(player.flames, 800, 0, 450, 0), 55, map(player.flames, 800, 0, 450, 0), 25, 12, 12, 25);
+    rect(30, 550 - map(player.flames, 800, 0, 450, 0), 55, map(player.flames, 800, 0, 450, 0), 25, 12, 12, 25);
     //DRAW SHOTS
     fill(#FFFFFF);
     for (int i= 0; i < sonics.size(); i++) {
@@ -301,7 +318,8 @@ void draw() {
       if (flameFrame == 4) {
         flameFrame = 0;
       }
-    }else{
+    }
+    else {
       flame = false;
     }
 
@@ -319,19 +337,21 @@ void draw() {
     cleanUp();
   }//END GAMESTATE == 1
   else if (gamestate == 2) {
+    fill(#FFFFFF);
     image(Backgrounds[1], 0, 0, 1280, 720);
 
     textFont(pointFont);
     text("GAME OVER", width/2 - 150, 150);
     text("" + (int)player.score + " poeng", width/2 - 150, 250);
-  
+
     int plass;
-   plass = highScore.scores.indexOf((int)player.score)+1;
-    if(plass <= 10){
-     text("Gratulerer med " + plass + ". plass", (width/2) - 350, 350); 
-     highScore.lastHighscore = plass;
-    }else{
-     highScore.lastHighscore = -1; 
+    plass = highScore.scores.indexOf((int)player.score)+1;
+    if (plass <= 10) {
+      text("Gratulerer med " + plass + ". plass", (width/2) - 350, 350); 
+      highScore.lastHighscore = plass;
+    }
+    else {
+      highScore.lastHighscore = -1;
     }
 
     text("Restarter om " + ((time - (millis() - 8000)))/1000 + " sekunder", 300, 550);
@@ -392,6 +412,8 @@ void keyPressed()
   if (key == ' ') {
     sonics.add(new Supersonic(player.x + (player.w / 2), player.y + 20));
     bell.trigger();
+
+    texts.add(new ScoreText(300, true, player.x, player.y));
   }
   if (key == 'f') {
     f.toggle(this);
@@ -407,7 +429,7 @@ void keyPressed()
     flame = false;
   }
   if (key == 'i') {
-    if(player.flames > 50){
+    if (player.flames > 50) {
       flame = true;
     }
   }
@@ -424,6 +446,13 @@ void speedUp() {
 }
 
 void cleanUp() {
+  for (int i = 0; i < texts.size(); i++) { //Fjerner alle hopp som er utenfor
+    if (texts.get(i).location.x > width - 100 || texts.get(i).location.y < 50) {
+      player.score += texts.get(i).p;
+      texts.remove(i);
+    }
+  }
+
   for (int i = 0; i < jumps.size(); i++) { //Fjerner alle hopp som er utenfor
     if (jumps.get(i).y > height +100) {
       jumps.remove(i);
@@ -467,15 +496,15 @@ int map(int x, int in_min, int in_max, int out_min, int out_max)
 void checkForSolidChrash() {
   for (int i = 0; i < solids.size(); i++) { //Fjerner alle hopp som er utenfor
     if (solids.get(i).y + 50 < player.y + player.h &&  solids.get(i).y + solids.get(i).h -50 > player.y) {
-      if (solids.get(i).x < player.x + player.w && solids.get(i).x + solids.get(i).w > player.x) {
+      if (solids.get(i).x < player.x + player.w-25 && solids.get(i).x + solids.get(i).w > player.x+25) {
         if (!player.safe && !player.isJumping() && 
-        (   (solids.get(i).isBush && !solids.get(i).isBurning) || !solids.get(i).isBush)) {
+          (   (solids.get(i).isBush && !solids.get(i).isBurning) || !solids.get(i).isBush)) {
           player.life--;
           player.safeleft  = 80;
           player.safe = true;
           player.safedraw = false;
           scrollSpeed = 5;
-          player.score -= 50;
+          texts.add(new ScoreText(-50, false, player.x, player.y));
         }
       }
     }
@@ -484,11 +513,34 @@ void checkForSolidChrash() {
     if (flame && solids.get(i).isBush && !solids.get(i).isBurning) {
       if (solids.get(i).y < player.y - flames[0].height+10 + flames[0].height &&  solids.get(i).y + solids.get(i).h > player.y - flames[0].height+10) {
         if (solids.get(i).x < (player.x + (player.w/2)) - (flames[0].width/2)-3 + flames[0].width && solids.get(i).x + solids.get(i).w > (player.x + (player.w/2)) - (flames[0].width/2)-3) {
-         solids.get(i).isBurning = true;
-         //TODO sett brennende bilde
-         solids.get(i).image = burningBush[0];
+          solids.get(i).isBurning = true;
+          //TODO sett brennende bilde
+          solids.get(i).image = burningBush[0];
+          texts.add(new ScoreText(35, true, solids.get(i).x, solids.get(i).y));
+        }
+      }
+    }
+  }
+  
+  
+  for (int i = 0; i < pumps.size(); i++) { //Fjerner alle hopp som er utenfor
+    if (pumps.get(i).y + 50 < player.y + player.h &&  pumps.get(i).y + pumps.get(i).h -50 > player.y) {
+      if (pumps.get(i).x < player.x + player.w-25 && pumps.get(i).x + pumps.get(i).w > player.x+25) {
+        if (!player.isJumping()){
+          texts.add(new ScoreText(75, true, pumps.get(i).x, pumps.get(i).y));
+          player.life++;
+          if(player.life > 6){
+            player.life = 6;
+          }
+          player.flames += 100;
+          if (player.flames > 800){
+           player.flames = 800; 
+          }
+          pumps.remove(i);
+          i--;
         }
       }
     }
   }
 }
+

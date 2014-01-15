@@ -59,7 +59,7 @@ public class Player {
     w = images[0].width;
     h = images[0].height;
 
-    life = 1;
+    life = 5;
     flames = 800;
   }
 
@@ -144,7 +144,7 @@ try{
     }
 
     for (int i = 1; i <= life; i++) {
-      image(lifeImage, (70 * i) - 60, 20);
+      image(lifeImage, 120, 50 + (70*i));
     }
   }
 
@@ -163,7 +163,8 @@ try{
     if (jump == false && scrollSpeed >= 4) {
       jump = true;    
       jumpSpeeder = 0;   
-      addScore(50.0);
+      texts.add(new ScoreText(50, true, player.x, player.y));
+      //addScore(50.0);
     }
   }
 }
