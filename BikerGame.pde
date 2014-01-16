@@ -19,6 +19,7 @@ PImage smallRock;
 PImage tree;
 PImage water;
 PImage pump;
+PImage frost;
 PImage jumpImage;//Bilde av hoppet
 PFont pointFont;//Fonten til poeng
 PFont textFont; //Font til resten
@@ -35,6 +36,7 @@ ArrayList<Solid> solids = new ArrayList<Solid>();
 ArrayList<Supersonic> sonics = new ArrayList<Supersonic>();
 ArrayList<ScoreText> texts = new ArrayList<ScoreText>();
 ArrayList<Pump> pumps = new ArrayList<Pump>();
+ArrayList<Enemy> enemys = new ArrayList<Enemy>();
 
 static int scrollSpeed = 0;//Hvor fort bakgrunnen scroller
 int scrollCount;
@@ -64,12 +66,13 @@ public void reset() {
   sonics = new ArrayList<Supersonic>();
   texts = new ArrayList<ScoreText>();
   pumps = new ArrayList<Pump>();
+  enemys = new ArrayList<Enemy>();
   player = new Player();
 }
 
 
 void setup() {
-
+  frost          = loadImage("Images/FrostEnemy.png");
   pump           = loadImage("Images/Pump.png");
   burningBush[0] = loadImage("Images/burningbush.png");
   burningBush[1] = loadImage("Images/Bush_Flame_01.png");
@@ -261,6 +264,9 @@ void draw() {
       if (r.nextInt(600) == 37) {
         pumps.add(new Pump(pump));
       }
+       if (r.nextInt(38) == 37) {
+        enemys.add(new FrostEnemy(frost));
+      }
     }
 
 
@@ -283,6 +289,9 @@ void draw() {
     }
     for (int i= 0; i < texts.size(); i++) {
       texts.get(i).draw();
+    }
+    for (int i= 0; i < enemys.size(); i++) {
+      enemys.get(i).draw();
     }
 
 
@@ -412,8 +421,6 @@ void keyPressed()
   if (key == ' ') {
     sonics.add(new Supersonic(player.x + (player.w / 2), player.y + 20));
     bell.trigger();
-
-    texts.add(new ScoreText(300, true, player.x, player.y));
   }
   if (key == 'f') {
     f.toggle(this);
@@ -464,8 +471,20 @@ void cleanUp() {
     }
   }
   for (int i = 0; i < sonics.size(); i++) { //Fjerner alle hopp som er utenfor
-    if (sonics.get(i).h > width*2 ) {
+    if (sonics.get(i).h > width*1.5 ) {
       sonics.remove(i);
+    }
+  }
+  
+  for (int i = 0; i < enemys.size(); i++) { //Fjerner alle hopp som er utenfor
+    if(enemys.get(i).dead){
+      enemys.remove(i);
+      i--;
+    }
+    else if (enemys.get(i).y > height ) {
+      texts.add(new ScoreText(-100, false, enemys.get(i).x, enemys.get(i).y));
+      enemys.remove(i);
+      i--;
     }
   }
 
@@ -521,8 +540,31 @@ void checkForSolidChrash() {
       }
     }
   }
+  //Sjekk for fiendetreff med flammer
+  for (int i = 0; i < enemys.size(); i++) { //Fjerner alle hopp som er utenfor
+      if (flame && !enemys.get(i).dying && !enemys.get(i).dead) {
+      if (enemys.get(i).y < player.y - flames[0].height+10 + flames[0].height &&  enemys.get(i).y + enemys.get(i).h > player.y - flames[0].height+10) {
+        if (enemys.get(i).x < (player.x + (player.w/2)) - (flames[0].width/2)-3 + flames[0].width && enemys.get(i).x + enemys.get(i).w > (player.x + (player.w/2)) - (flames[0].width/2)-3) {
+          enemys.get(i).dying = true;
+          enemys.get(i).diestate = true;
+          texts.add(new ScoreText(100, true, enemys.get(i).x, enemys.get(i).y));
+        }
+      }
+    }
+  }
   
+  for(int i = 0; i < sonics.size(); i++){
+    for(int j = 0; j < enemys.size(); j++){
+      float d = dist(sonics.get(i).x,sonics.get(i).y, enemys.get(j).x, enemys.get(j).y );
+      if(enemys.get(j) instanceof FrostEnemy &&  d <= sonics.get(i).h + 50 && !enemys.get(j).dying){
+        enemys.get(j).dying = true;
+        enemys.get(j).diestate = false;
+        texts.add(new ScoreText(100, true, enemys.get(j).x, enemys.get(j).y));
+      } 
+    }
+  }
   
+  //sjekk for pumper
   for (int i = 0; i < pumps.size(); i++) { //Fjerner alle hopp som er utenfor
     if (pumps.get(i).y + 50 < player.y + player.h &&  pumps.get(i).y + pumps.get(i).h -50 > player.y) {
       if (pumps.get(i).x < player.x + player.w-25 && pumps.get(i).x + pumps.get(i).w > player.x+25) {
