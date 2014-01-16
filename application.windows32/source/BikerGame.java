@@ -1,13 +1,41 @@
-import java.util.*;
-import processing.serial.*; 
-import ddf.minim.*;
+import processing.core.*; 
+import processing.xml.*; 
 
-import javax.media.opengl.*;
-import processing.opengl.*;
+import java.util.*; 
+import processing.serial.*; 
+import ddf.minim.*; 
+import javax.media.opengl.*; 
+import processing.opengl.*; 
+import java.awt.Dimension; 
+import java.awt.Toolkit; 
+import processing.core.PApplet; 
+import processing.video.*; 
+
+import java.applet.*; 
+import java.awt.Dimension; 
+import java.awt.Frame; 
+import java.awt.event.MouseEvent; 
+import java.awt.event.KeyEvent; 
+import java.awt.event.FocusEvent; 
+import java.awt.Image; 
+import java.io.*; 
+import java.net.*; 
+import java.text.*; 
+import java.util.*; 
+import java.util.zip.*; 
+import java.util.regex.*; 
+
+public class BikerGame extends PApplet {
+
+
+ 
+
+
+
+
 
 AudioSample bell;
 Minim minim;
-PFont pointsFont;
 PImage Backgrounds[] = new PImage[4] ;//Inneholder bakgrunnsbilder
 int BackgroundYs[] = new int[4]; //Inneholder Y posisjonen til bakgrunnene
 PImage[] flamesEnemy = new PImage[4];
@@ -45,7 +73,7 @@ static int scrollSpeed = 0;//Hvor fort bakgrunnen scroller
 int scrollCount;
 
 int bakgroundY = 0;
-int imageHeight = 720;//Høyden på en bakgrunn
+int imageHeight = 720;//H\u00f8yden p\u00e5 en bakgrunn
 
 int time;
 
@@ -74,7 +102,7 @@ public void reset() {
 }
 
 
-void setup() {
+public void setup() {
   happy           = loadImage("Images/BurningEnemy_Friendly.png");
   flamesEnemy[0]  = loadImage("Images/BurningEnemy_Fire01.png");
   flamesEnemy[1]  = loadImage("Images/BurningEnemy_Fire02.png");
@@ -127,7 +155,7 @@ void setup() {
   BackgroundList.add(Backgrounds[0]);
   BackgroundList.add(Backgrounds[0]);
 
-  BackgroundYs[0] = 0;//Setter initiell posisjon på bakgrunnene
+  BackgroundYs[0] = 0;//Setter initiell posisjon p\u00e5 bakgrunnene
   BackgroundYs[1] = -720;
   BackgroundYs[2] = -1440;
   BackgroundYs[3] = -2180;
@@ -136,17 +164,16 @@ void setup() {
   bell = minim.loadSample("Sounds/bell.wav", 2048);
   pointFont = loadFont("Algerian-48.vlw");//Laster inn fonter
   textFont = loadFont("Aharoni-Bold-32.vlw");
-  pointsFont = createFont("Algerian", 30);
 
   highScore.ReadScores();
 
 
   player = new Player();//oppretter spilleren
   tv = new Tv(this);//oppretter tven
-  frameRate(40);//Setter framerate til 30, sånn at det blir stabilt
+  frameRate(40);//Setter framerate til 30, s\u00e5nn at det blir stabilt
 
   textFont(pointFont, 48);//Setter hovedtekstfonten
-  size(1280, 720, OPENGL);//Setter oppløsning og grafikkmotor
+  size(1280, 720, OPENGL);//Setter oppl\u00f8sning og grafikkmotor
   try {
     myPort = new Serial(this, Serial.list()[0], 9600);
     myPort.clear();
@@ -156,7 +183,7 @@ void setup() {
   smooth();
 }
 
-void serialEvent(Serial p) { 
+public void serialEvent(Serial p) { 
   try {
     input = p.readStringUntil(10);
     if (input!=null) {
@@ -192,7 +219,7 @@ void serialEvent(Serial p) {
       }else if(input.contains("a")){
        input = input.replace("a", "");
         double speed = Double.parseDouble(input);
-       if(speed > scrollSpeed + 2.0){
+       if(speed > scrollSpeed + 2.0f){
         scrollSpeed += 1;
        //}else if(scrollSpeed < speed){
        // scrollSpeed = (int)speed;
@@ -205,7 +232,7 @@ void serialEvent(Serial p) {
   }
 }
 
-void draw() {
+public void draw() {
 
 
   if (gamestate == 0) {
@@ -246,13 +273,13 @@ void draw() {
      scrollCount++;  //Hadde ingen innvirkning, vet ikke hva den er til....
      }*/
     if (frameCount % 10 == 0) {
-      player.addScore(scrollSpeed/5.0);
+      player.addScore(scrollSpeed/5.0f);
     }
 
     /**Her kan vi spawne nye entiteter**/
     if (scrollSpeed >= 3) {// Spawner kun hopp derson hastigheten er over 3
       if (r.nextInt(80) == 10) {//Spavenr kun hopp med 1/80 dels sansynelighet
-        jumps.add(new Jump(r.nextInt(780) + 220, jumpImage));//x posisjonen til hoppet blir valgt random (innenfor kjørbart område)
+        jumps.add(new Jump(r.nextInt(780) + 220, jumpImage));//x posisjonen til hoppet blir valgt random (innenfor kj\u00f8rbart omr\u00e5de)
       }
 
       if (r.nextInt(400) == 37) {
@@ -293,7 +320,7 @@ void draw() {
 
     //TODO spawn fiender, spawn hindringer osv
 
-    /** Gjør all tegning**/
+    /** Gj\u00f8r all tegning**/
     for (int i = 0; i < jumps.size(); i++) {
       jumps.get(i).draw();//tegner alle hopp
     }
@@ -306,7 +333,6 @@ void draw() {
     for (int i= 0; i < pumps.size(); i++) {
       pumps.get(i).draw();
     }
-    textFont(pointsFont);
     for (int i= 0; i < texts.size(); i++) {
       texts.get(i).draw();
     }
@@ -331,12 +357,12 @@ void draw() {
     text(frameRate + "fps", 75, height -50);
 
     //TEGNER FLAMMEMENGDE
-    fill(#FF0000);
+    fill(0xffFF0000);
     rect(30, 100, 55, 450, 25, 12, 12, 25);
-    fill(#FFA824);
+    fill(0xffFFA824);
     rect(30, 550 - map(player.flames, 800, 0, 450, 0), 55, map(player.flames, 800, 0, 450, 0), 25, 12, 12, 25);
     //DRAW SHOTS
-    fill(#FFFFFF);
+    fill(0xffFFFFFF);
     for (int i= 0; i < sonics.size(); i++) {
       sonics.get(i).draw();
     }
@@ -366,7 +392,7 @@ void draw() {
     cleanUp();
   }//END GAMESTATE == 1
   else if (gamestate == 2) {
-    fill(#FFFFFF);
+    fill(0xffFFFFFF);
     image(Backgrounds[1], 0, 0, 1280, 720);
 
     textFont(pointFont);
@@ -382,7 +408,6 @@ void draw() {
     else {
       highScore.lastHighscore = -1;
     }
-    highScore.draw();
 
     text("Restarter om " + ((time - (millis() - 8000)))/1000 + " sekunder", 300, 550);
     if (millis() > time + 7000) {
@@ -393,8 +418,8 @@ void draw() {
   }
 }
 
-/** Lytter på knapper, brukes under utvikling på pc**/
-void keyReleased() {
+/** Lytter p\u00e5 knapper, brukes under utvikling p\u00e5 pc**/
+public void keyReleased() {
   if (key == CODED)
   {
     if (keyCode == LEFT)
@@ -408,7 +433,7 @@ void keyReleased() {
   }
 }
 
-void keyPressed()
+public void keyPressed()
 {
   if (key == CODED)
   {
@@ -444,7 +469,7 @@ void keyPressed()
     bell.trigger();
   }
   if (key == 'f') {
-   // f.toggle(this);
+    f.toggle(this);
   }
   if (key == 'g') {
     player.images = player.girlImages;
@@ -463,17 +488,17 @@ void keyPressed()
   }
 }
 
-void speedDown() {
+public void speedDown() {
   scrollSpeed--; 
   if (scrollSpeed < 0) scrollSpeed = 0;
 }
 
-void speedUp() {
+public void speedUp() {
   scrollSpeed++; 
   if (scrollSpeed > 30) scrollSpeed = 30;
 }
 
-void cleanUp() {
+public void cleanUp() {
   for (int i = 0; i < texts.size(); i++) { //Fjerner alle hopp som er utenfor
     if (texts.get(i).location.x > width - 100 || texts.get(i).location.y < 50) {
       player.score += texts.get(i).p;
@@ -492,7 +517,7 @@ void cleanUp() {
     }
   }
   for (int i = 0; i < sonics.size(); i++) { //Fjerner alle hopp som er utenfor
-    if (sonics.get(i).h > width*1.5 ) {
+    if (sonics.get(i).h > width*1.5f ) {
       sonics.remove(i);
     }
   }
@@ -514,7 +539,7 @@ void cleanUp() {
 
 
 //sjekker om spillern skal hoppe
-void checkForJumps() {
+public void checkForJumps() {
   for (int i = 0; i < jumps.size(); i++) {
     Jump j = jumps.get(i);
     if (j.x +50 < player.x + player.w && j.x + j.w -50 > player.x) {
@@ -527,13 +552,13 @@ void checkForJumps() {
 }
 
 
-int map(int x, int in_min, int in_max, int out_min, int out_max)
+public int map(int x, int in_min, int in_max, int out_min, int out_max)
 {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 
-void checkForSolidChrash() {
+public void checkForSolidChrash() {
   for (int i = 0; i < solids.size(); i++) { //Fjerner alle hopp som er utenfor
     if (solids.get(i).y + 50 < player.y + player.h &&  solids.get(i).y + solids.get(i).h -50 > player.y) {
       if (solids.get(i).x < player.x + player.w-25 && solids.get(i).x + solids.get(i).w > player.x+25) {
@@ -549,7 +574,7 @@ void checkForSolidChrash() {
       }
     }
 
-    //Skjekk for flammeburn på busk
+    //Skjekk for flammeburn p\u00e5 busk
     if (flame && solids.get(i).isBush && !solids.get(i).isBurning) {
       if (solids.get(i).y < player.y - flames[0].height+10 + flames[0].height &&  solids.get(i).y + solids.get(i).h > player.y - flames[0].height+10) {
         if (solids.get(i).x < (player.x + (player.w/2)) - (flames[0].width/2)-3 + flames[0].width && solids.get(i).x + solids.get(i).w > (player.x + (player.w/2)) - (flames[0].width/2)-3) {
@@ -588,7 +613,7 @@ void checkForSolidChrash() {
         enemys.get(j).dying = true;
         enemys.get(j).diestate = false;
         texts.add(new ScoreText(100, true, enemys.get(j).x, enemys.get(j).y));
-      }else if(enemys.get(j) instanceof FireEnemy &&  d <= sonics.get(i).h + 50 && d >= sonics.get(i).h && !enemys.get(j).dying){
+      }else if(enemys.get(j) instanceof FireEnemy &&  d <= sonics.get(i).h + 50 && !enemys.get(j).dying){
        enemys.get(j).dying = true;
        texts.add(new ScoreText(100, true, enemys.get(j).x, enemys.get(j).y));
       } 
@@ -618,3 +643,607 @@ void checkForSolidChrash() {
   }
 }
 
+public class Bush extends Solid{
+ 
+ public Bush(PImage image){
+  super(image);
+  isBush = true;
+ } 
+}
+public class DirtCrack extends Solid{
+  public DirtCrack(PImage img){
+   super(img); 
+  }
+}
+
+
+public class Enemy{
+  
+  PImage img;
+  Random r = new Random();
+  int x,y,w,h;
+  boolean dying;
+  boolean diestate; //is- true smelte false smuldre
+  boolean dead;
+  public Enemy(PImage image){
+    img = image;
+    x = 220 + r.nextInt(800);
+    y = -100;
+    w = img.width;
+    h = img.height;
+  }
+  
+ public void draw(){
+  
+ } 
+  
+}
+
+
+public class FireEnemy extends Enemy{
+  int fireTeller = 0;
+  int imgTeller = 0;
+  PImage[] eimage;
+  PImage[] fimage;
+  public FireEnemy(PImage[] eimage, PImage[] fimage){
+   super(eimage[0]);
+   this.eimage = eimage;
+   this.fimage = fimage;
+  }
+  
+  public void draw(){
+    if(!dying){
+      image(fimage[fireTeller], x, y);
+      image(eimage[imgTeller],x, y);
+      y++;
+    }else{
+      image(happy, x,y);
+      y+= scrollSpeed;
+    }
+    
+    
+    if(y % 4 == 0){
+    fireTeller++;
+    imgTeller++;
+    if(fireTeller == 3){
+     fireTeller = 0; 
+    }
+    if(imgTeller == 4){
+      imgTeller = 0;
+    }
+    }
+  }
+  
+}
+
+
+public class FrostEnemy extends Enemy {
+  int cellsize = 4; // Dimensions of each cell in the grid
+  int columns, rows; 
+  int ma = 0;
+  int w, s;
+  public FrostEnemy(PImage image) {
+    super(image);
+    columns = img.width / cellsize;  // Calculate # of columns
+    rows = img.height / cellsize;  //
+  }
+
+  public void draw() {
+    y += scrollSpeed;
+
+    if (dying && !dead) {
+      if (diestate) {//Smelte
+        image(water, x + (img.width/2) -w/2, y+img.height-20, w, w);
+        image(img, x, y+ s, img.width, img.height - s);
+
+        s +=2;
+        w++;
+        if (s >= img.height) {
+          dead = true;
+        }
+      }
+      else {//Smuldre
+        for ( int i = 0; i < columns; i++) {
+          // Begin loop for rows
+          for ( int j = 0; j < rows; j++) {
+            int xx = i*cellsize + cellsize/2;  // x position
+            int yy = j*cellsize + cellsize/2;  // y position
+            int loc = xx + yy*img.width;  // Pixel array location
+            int c = img.pixels[loc];  // Grab the color
+            // Calculate a z position as a function of mouseX and pixel brightness
+            //img.pixels[loc]
+            float z = (ma / PApplet.parseFloat(520)) * brightness(r.nextInt(600));
+            // Translate to the location, set fill and stroke, and draw the rect
+            pushMatrix();
+            translate(xx+x, yy + y, z);
+            fill(c, 204);
+            noStroke();
+            rectMode(CENTER);
+            rect(0, 0, cellsize, cellsize);
+            popMatrix();
+            rectMode(CORNER);
+          }
+        }
+        ma += 14;
+        if (ma > 400) {
+          ma = 0;
+          dead = true;
+        }
+      }
+    }
+    else {
+      image(img, x, y);
+    }
+  }
+}
+
+
+
+
+
+public class Fullscreen {
+  private  boolean FULL_SCREEN = false;
+  public  Dimension APP_SIZE = new Dimension(1280, 720);
+  
+  private  void setChrome(PApplet papplet, boolean full) {
+    papplet.frame.setUndecorated(full);
+  }
+
+  private  void setLocation(PApplet papplet, boolean full) {
+    papplet.frame.setLocation(0, 0);      
+  }
+
+  private  void setSize(PApplet papplet, boolean full) {
+    if (full) {
+      papplet.frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+    } else {
+      papplet.frame.setSize(APP_SIZE);
+    }    
+  }
+    
+  public  void toggle(PApplet papplet) {
+    FULL_SCREEN = !FULL_SCREEN; 
+    papplet.frame.dispose();
+    papplet.frame.setResizable(!FULL_SCREEN);
+    setSize(papplet, FULL_SCREEN);
+    setChrome(papplet, FULL_SCREEN);
+    setLocation(papplet, FULL_SCREEN);
+    papplet.frame.setVisible(true);
+  }
+}
+ 
+public class HighScore {
+  BufferedReader reader;
+  String line;
+  ArrayList<Integer> scores = new ArrayList<Integer>();
+  PrintWriter output;
+  int lastHighscore;
+
+  public void ReadScores() {
+    scores = new ArrayList<Integer>();
+    try {
+      reader = createReader(dataPath("score.txt"));    
+      while ( (line = reader.readLine ()) != null) {
+        scores.add(Integer.parseInt(line));
+      }
+    }
+    catch(Exception e) {
+      e.printStackTrace();
+    }
+    Collections.sort(scores);
+    Collections.reverse(scores);
+  }
+
+  public void addScore(double s) {
+    scores.add((int)s); 
+    Collections.sort(scores);
+    Collections.reverse(scores);
+    output = createWriter(dataPath("score.txt"));
+    for (int i = 0; i < scores.size(); i++) {
+
+      output.println(scores.get(i));
+    }
+    output.flush();
+    output.close();
+  }
+
+  public void draw() {
+    PFont s = createFont("Georgia", 38);
+    textFont(s);
+    fill(0xffFFFFFF);
+    text("High Score", 1080, 80);
+    for (int i = 0; i < scores.size() && i < 10; i++) {
+      if (lastHighscore-1 == i) {
+        fill(0xffFF0000);
+      }
+      else {
+        fill(0xffFFFFFF);
+      }
+      text(""+(i+1) + ". " + scores.get(i), 1090, 120 + (40*(1+i)) );
+    }
+  }
+}
+
+public class Jump{
+ PImage image;
+  int x, y; //koordinater
+  int w, h;//bredde h\u00f8yde
+ public Jump(int x, PImage image){
+  
+  this.x = x;
+  this.image = image; 
+  y = -100;
+  
+  w = image.width;
+  h = image.height;
+ } 
+  
+ public void draw(){
+   image(image, x,y);
+   y += scrollSpeed;
+ }   
+}
+public class LargeRock extends Solid{  
+ public LargeRock(PImage image){//Utvides til \u00e5 ta imot og sende videre x posisjon
+  super(image);
+ }
+}
+public class Menu
+{
+  PFont head = createFont("Algerian", 92);
+  PFont text = createFont("Algerian", 48);
+ 
+ public void draw(){
+  textFont(head);
+  text("Biker Game", 350.0f, 100);
+  textFont(text);
+  text("    Sykkle s\u00e5 langt du kan,", 250, 250);
+  text("        pass deg for hindere", 250, 300);
+  text("     Knus isfiender med den ",250, 350);
+  text("  supersoniske ringeklokken,", 250, 400);
+  text("    Brenn vampyrer og busker",250,450);
+  text("      med brennhete flammer", 250, 500);
+  
+    text("Ring med bjellen for \u00e5 starte", 250, 600);
+ } 
+  
+  
+}
+public class Player {
+  PImage playerImage;
+  PImage lifeImage;
+  PImage[] images = new PImage[8];
+  PImage[] boyImages = new PImage[8];
+  PImage[] girlImages = new PImage[8];
+
+  boolean goLeft, goRight, turn, safe, safedraw;
+  int safeleft;
+  int x, y;
+  int life;
+  int w, h;
+  int flames;
+  double score;
+
+  private boolean jump = false;
+  private int jumpdir = 1;   
+  private int jumpScale = 1;
+  private int jumpSpeeder;
+  int dist = 0;
+
+  int imageRot = 0;
+  int imgAdder = 0;
+  public Player() {
+    //    playerImage = loadImage("Images/Character.png");
+    lifeImage = loadImage("Images/Helmet.png");
+
+    boyImages[0] = loadImage("Images/01_BoyAnim.png");
+    boyImages[1] = loadImage("Images/02_BoyAnim.png");
+    boyImages[2] = loadImage("Images/03_BoyAnim.png");
+    boyImages[3] = loadImage("Images/04_BoyAnim.png");
+    boyImages[4] = loadImage("Images/05_BoyAnim.png");
+    boyImages[5] = loadImage("Images/06_BoyAnim.png");
+    boyImages[6] = loadImage("Images/07_BoyAnim.png");
+    boyImages[7] = loadImage("Images/08_BoyAnim.png");
+
+    girlImages[0] = loadImage("Images/01_GirlAnim.png");
+    girlImages[1] = loadImage("Images/02_GirlAnim.png");
+    girlImages[2] = loadImage("Images/03_GirlAnim.png");
+    girlImages[3] = loadImage("Images/04_GirlAnim.png");
+    girlImages[4] = loadImage("Images/05_GirlAnim.png");
+    girlImages[5] = loadImage("Images/06_GirlAnim.png");
+    girlImages[6] = loadImage("Images/07_GirlAnim.png");
+    girlImages[7] = loadImage("Images/08_GirlAnim.png");
+
+    Random r = new Random();
+
+    if (r.nextInt(50) > 25) {
+      images = boyImages;
+    }
+    else {
+      images = girlImages;
+    }
+
+    x = 740  - (images[0].width);
+
+    y = 680 - (int)(images[0].height);
+
+    w = images[0].width;
+    h = images[0].height;
+
+    life = 3;
+    flames = 800;
+  }
+
+  public void draw() {
+
+    //dist = 2 * (scrollSpeed/2);
+    if (!jump) {
+      if (turn) {
+        if (scrollSpeed != 0) {
+
+          x += dist * (scrollSpeed/4);
+          if (x > 1060 - (images[0].width)) {
+            x = 1060 - (images[0].width);
+          }
+          if (x < 220) {
+            x = 220;
+          }
+        }
+      }
+try{
+      if (goRight) {       
+        x += 5;
+        if (dist == 0 && scrollSpeed > 0) {
+          x+= 1;
+        }
+        if (x > 1060 - (playerImage.width)) {
+          x = 1060 - (playerImage.width);
+        }
+      }
+      else if (goLeft) {
+        x -= 5;
+        if (dist == 0 && scrollSpeed > 0) {
+          x-= 1;
+        }
+        if (x < 220) {
+          x = 220;
+        }
+      }
+          }catch(Exception e){}
+    }
+
+    if (jump) {
+      if (scrollSpeed > 5 && jumpSpeeder % 6 == 0) {
+        speedDown();
+      }
+      jumpSpeeder++;
+      image(images[imageRot], x, y, (images[0].width+jumpScale), (images[0].height+jumpScale));
+      jumpScale += jumpdir;
+      if (jumpScale == 30) {
+        jumpdir = -1;
+      }
+      else if (jumpScale == 1) {
+        jumpdir = 1;
+        jump = false;
+      }
+    }
+    else {
+      imgAdder += scrollSpeed;
+      if (imgAdder >= 40) {
+        imageRot++;
+        if (imageRot == 8) {
+          imageRot = 0;
+        }
+        imgAdder = 0;
+      }
+      if(safe){
+        safeleft--;
+        if(safeleft % 8 == 0){
+          safedraw = !safedraw;
+        }
+        if(safedraw){
+          image(images[imageRot], x, y);
+        }else{
+        }
+        if(safeleft <=0){
+         safedraw = true;
+        safe = false; 
+        }
+      }else{
+        image(images[imageRot], x, y);
+      }
+    }
+
+    for (int i = 1; i <= life; i++) {
+      image(lifeImage, 120, 50 + (70*i));
+    }
+  }
+
+
+
+
+  public boolean isJumping() {
+    return jump;
+  }
+
+  public void addScore(double a) {
+    score += a;
+  }
+
+  public void jump() {
+    if (jump == false && scrollSpeed >= 4) {
+      jump = true;    
+      jumpSpeeder = 0;   
+      texts.add(new ScoreText(50, true, player.x, player.y));
+      //addScore(50.0);
+    }
+  }
+}
+
+public class Pump{
+ PImage img;
+ int x, y, h, w;
+  public Pump(PImage image){
+  img = image;
+  w = image.width;
+  h = image.height;
+  y = - 100;
+  x = 220 + r.nextInt(1060);
+ }
+
+  public void draw(){
+   y+=scrollSpeed;
+   image(img,x,y);
+  } 
+  
+}
+public class RockLong extends Solid{
+ public RockLong(PImage image){
+   super(image);
+ }
+}
+public class RockSmall extends Solid{
+ public RockSmall(PImage image){
+   super(image);
+ }
+}
+public class ScoreText {
+  int p;
+  boolean co;
+
+  PVector location;
+  PVector velocity;
+  float x, y;
+  public ScoreText(int points, boolean isGood, int xx, int yy) {
+    p = points;
+    co = isGood;
+    location = new PVector(xx, yy);
+
+    float angle = atan2(50 - yy, width - 160 - xx);
+
+    x = cos(angle)*15;
+    y = sin(angle)*15;
+
+    velocity = new PVector(x, y);
+    //width - 160, 50
+  } 
+
+  public void draw() {
+    if(co){
+      fill(0xff29FF00);
+    }else{
+      fill(0xffF54D58);
+    }
+    location.add(velocity); 
+    text(""+p, (int)location.x, (int)location.y);
+  }
+}
+
+class Solid{
+ int x = 0, y = 0, w = 0, h = 0; 
+  Random r = new Random();
+  public PImage image;
+  boolean isBush;
+  boolean isBurning;
+  int burnimage = 0;
+  int burnimageChange;
+  public Solid(PImage image){//Utvides til \u00e5 ta imot x posisjon
+   this.image = image; 
+   w = image.width;
+   h = image.height;
+   y = -50;
+   x = 220 + r.nextInt(800 - w);
+}
+  
+ public void draw(){
+    y+=scrollSpeed;
+    if(isBush && isBurning && burnimage < 10){
+      burnimageChange++;
+      if(burnimageChange == 5){
+       burnimageChange = 0; 
+      burnimage++; 
+     image = burningBush[burnimage] ;
+    }
+      
+    }
+    image(image, x,y);
+ }
+}
+public class Supersonic{
+  int x,y,h;
+ public Supersonic(int x, int y){
+  this.x = x;
+ this.y = y;
+  h = 0; 
+ }
+ 
+ public void draw(){
+   stroke(50,50,230);
+   strokeWeight(5);
+  fill(50,50,230, 1.0f);
+  ellipse(x,y,h,h);
+  h+=50;
+  strokeWeight(1);
+ } 
+}
+public class Tree extends Solid{
+ public Tree(PImage image){
+   super(image);
+ }
+}
+
+
+
+public class Tv {
+  Capture cam;
+  PImage tv;
+  int i = 0;  
+  public Tv(BikerGame b) {
+    tv = loadImage("Images/TV.png");
+
+
+    /*String[] cameras = Capture.list();
+
+    if (cameras == null) {
+      println("Failed to retrieve the list of available cameras, will try the default...");
+      cam = new Capture(b, 640, 480);
+    } 
+    if (cameras.length == 0) {
+      println("There are no cameras available for capture.");
+      exit();
+    } 
+    else {
+      println("Available cameras:");
+      for (int i = 0; i < cameras.length; i++) {
+        println(cameras[i]);
+      }
+      cam = new Capture(b, 640, 480);
+      cam.start();
+    }*/
+    
+  } 
+
+
+  public void draw() {
+    //if (i == 25) {
+    //  if (cam.available() == true) {
+    //    cam.read();
+    //  }
+    // i = 0;
+   //}
+    i++;
+    image(tv, 0, height-(tv.height/1.5f), tv.width/1.5f, tv.height/1.5f);
+    //image(cam, 25, 585, 165, 107);
+    //set(0,0,cam);
+  }
+}
+
+public class Water extends Solid{
+ public Water(PImage image){
+   super(image);
+ }
+}
+  static public void main(String args[]) {
+    PApplet.main(new String[] { "--present", "--bgcolor=#666666", "--stop-color=#cccccc", "BikerGame" });
+  }
+}

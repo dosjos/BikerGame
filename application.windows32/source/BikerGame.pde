@@ -7,7 +7,6 @@ import processing.opengl.*;
 
 AudioSample bell;
 Minim minim;
-PFont pointsFont;
 PImage Backgrounds[] = new PImage[4] ;//Inneholder bakgrunnsbilder
 int BackgroundYs[] = new int[4]; //Inneholder Y posisjonen til bakgrunnene
 PImage[] flamesEnemy = new PImage[4];
@@ -136,7 +135,6 @@ void setup() {
   bell = minim.loadSample("Sounds/bell.wav", 2048);
   pointFont = loadFont("Algerian-48.vlw");//Laster inn fonter
   textFont = loadFont("Aharoni-Bold-32.vlw");
-  pointsFont = createFont("Algerian", 30);
 
   highScore.ReadScores();
 
@@ -306,7 +304,6 @@ void draw() {
     for (int i= 0; i < pumps.size(); i++) {
       pumps.get(i).draw();
     }
-    textFont(pointsFont);
     for (int i= 0; i < texts.size(); i++) {
       texts.get(i).draw();
     }
@@ -382,7 +379,6 @@ void draw() {
     else {
       highScore.lastHighscore = -1;
     }
-    highScore.draw();
 
     text("Restarter om " + ((time - (millis() - 8000)))/1000 + " sekunder", 300, 550);
     if (millis() > time + 7000) {
@@ -444,7 +440,7 @@ void keyPressed()
     bell.trigger();
   }
   if (key == 'f') {
-   // f.toggle(this);
+    f.toggle(this);
   }
   if (key == 'g') {
     player.images = player.girlImages;
@@ -588,7 +584,7 @@ void checkForSolidChrash() {
         enemys.get(j).dying = true;
         enemys.get(j).diestate = false;
         texts.add(new ScoreText(100, true, enemys.get(j).x, enemys.get(j).y));
-      }else if(enemys.get(j) instanceof FireEnemy &&  d <= sonics.get(i).h + 50 && d >= sonics.get(i).h && !enemys.get(j).dying){
+      }else if(enemys.get(j) instanceof FireEnemy &&  d <= sonics.get(i).h + 50 && !enemys.get(j).dying){
        enemys.get(j).dying = true;
        texts.add(new ScoreText(100, true, enemys.get(j).x, enemys.get(j).y));
       } 

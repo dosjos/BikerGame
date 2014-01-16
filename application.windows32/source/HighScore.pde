@@ -41,13 +41,11 @@ public class HighScore {
     for (int i = 0; i < scores.size() && i < 10; i++) {
       if (lastHighscore-1 == i) {
         fill(#FF0000);
-        text(""+(i+1) + ". " + scores.get(i), 1090-20, 120 + (40*(1+i)) );
       }
       else {
         fill(#FFFFFF);
-        text(""+(i+1) + ". " + scores.get(i), 1090, 120 + (40*(1+i)) );
       }
-      
+      text(""+(i+1) + ". " + scores.get(i), 1090, 120 + (40*(1+i)) );
     }
   }
 }
