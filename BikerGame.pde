@@ -317,18 +317,18 @@ void draw() {
 
 
 
-
+ tv.draw();
 
 
     //Skriver vi score, text osv
     fill(255);
     stroke(0);
     textFont(pointFont);
-    text("" + (int)player.score, width - 160, 50);
-    text("" + scrollSpeed, width - 160, height-50);
+    text("" + (int)player.score, width - 160, 90);
+    text("" + scrollSpeed, width - 160, height-70);
     textFont(textFont);
-    text("km/t", width - 100, height-50);
-    text(frameRate + "fps", 75, height -50);
+    text("km/t", width - 100, height-70);
+   // text(frameRate + "fps", 75, height -50);
 
     //TEGNER FLAMMEMENGDE
     fill(#FF0000);
@@ -353,7 +353,7 @@ void draw() {
     }
 
     player.draw();//Tegner spiller
-    tv.draw();
+   
 
 
     if (player.life <= 0) {
