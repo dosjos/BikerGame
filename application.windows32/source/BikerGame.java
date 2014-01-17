@@ -36,6 +36,7 @@ public class BikerGame extends PApplet {
 
 AudioSample bell;
 Minim minim;
+PFont pointsFont;
 PImage Backgrounds[] = new PImage[4] ;//Inneholder bakgrunnsbilder
 int BackgroundYs[] = new int[4]; //Inneholder Y posisjonen til bakgrunnene
 PImage[] flamesEnemy = new PImage[4];
@@ -164,6 +165,7 @@ public void setup() {
   bell = minim.loadSample("Sounds/bell.wav", 2048);
   pointFont = loadFont("Algerian-48.vlw");//Laster inn fonter
   textFont = loadFont("Aharoni-Bold-32.vlw");
+  pointsFont = createFont("Algerian", 30);
 
   highScore.ReadScores();
 
@@ -333,6 +335,7 @@ public void draw() {
     for (int i= 0; i < pumps.size(); i++) {
       pumps.get(i).draw();
     }
+    textFont(pointsFont);
     for (int i= 0; i < texts.size(); i++) {
       texts.get(i).draw();
     }
@@ -343,18 +346,18 @@ public void draw() {
 
 
 
-
+ tv.draw();
 
 
     //Skriver vi score, text osv
     fill(255);
     stroke(0);
     textFont(pointFont);
-    text("" + (int)player.score, width - 160, 50);
-    text("" + scrollSpeed, width - 160, height-50);
+    text("" + (int)player.score, width - 160, 90);
+    text("" + scrollSpeed, width - 160, height-70);
     textFont(textFont);
-    text("km/t", width - 100, height-50);
-    text(frameRate + "fps", 75, height -50);
+    text("km/t", width - 100, height-70);
+   // text(frameRate + "fps", 75, height -50);
 
     //TEGNER FLAMMEMENGDE
     fill(0xffFF0000);
@@ -379,7 +382,7 @@ public void draw() {
     }
 
     player.draw();//Tegner spiller
-    tv.draw();
+   
 
 
     if (player.life <= 0) {
@@ -408,6 +411,7 @@ public void draw() {
     else {
       highScore.lastHighscore = -1;
     }
+    highScore.draw();
 
     text("Restarter om " + ((time - (millis() - 8000)))/1000 + " sekunder", 300, 550);
     if (millis() > time + 7000) {
@@ -469,7 +473,7 @@ public void keyPressed()
     bell.trigger();
   }
   if (key == 'f') {
-    f.toggle(this);
+   // f.toggle(this);
   }
   if (key == 'g') {
     player.images = player.girlImages;
@@ -613,7 +617,7 @@ public void checkForSolidChrash() {
         enemys.get(j).dying = true;
         enemys.get(j).diestate = false;
         texts.add(new ScoreText(100, true, enemys.get(j).x, enemys.get(j).y));
-      }else if(enemys.get(j) instanceof FireEnemy &&  d <= sonics.get(i).h + 50 && !enemys.get(j).dying){
+      }else if(enemys.get(j) instanceof FireEnemy &&  d <= sonics.get(i).h + 50 && d >= sonics.get(i).h && !enemys.get(j).dying){
        enemys.get(j).dying = true;
        texts.add(new ScoreText(100, true, enemys.get(j).x, enemys.get(j).y));
       } 
@@ -695,13 +699,11 @@ public class FireEnemy extends Enemy{
     if(!dying){
       image(fimage[fireTeller], x, y);
       image(eimage[imgTeller],x, y);
-      y++;
     }else{
       image(happy, x,y);
-      y+= scrollSpeed;
     }
-    
-    
+    y+= scrollSpeed;
+    x += -6 + r.nextInt(13);
     if(y % 4 == 0){
     fireTeller++;
     imgTeller++;
@@ -855,11 +857,13 @@ public class HighScore {
     for (int i = 0; i < scores.size() && i < 10; i++) {
       if (lastHighscore-1 == i) {
         fill(0xffFF0000);
+        text(""+(i+1) + ". " + scores.get(i), 1090-20, 120 + (40*(1+i)) );
       }
       else {
         fill(0xffFFFFFF);
+        text(""+(i+1) + ". " + scores.get(i), 1090, 120 + (40*(1+i)) );
       }
-      text(""+(i+1) + ". " + scores.get(i), 1090, 120 + (40*(1+i)) );
+      
     }
   }
 }
@@ -895,14 +899,16 @@ public class Menu
  
  public void draw(){
   textFont(head);
+  fill(0xffFFFFFF);
   text("Biker Game", 350.0f, 100);
   textFont(text);
-  text("    Sykkle s\u00e5 langt du kan,", 250, 250);
-  text("        pass deg for hindere", 250, 300);
-  text("     Knus isfiender med den ",250, 350);
-  text("  supersoniske ringeklokken,", 250, 400);
-  text("    Brenn vampyrer og busker",250,450);
-  text("      med brennhete flammer", 250, 500);
+  text("    Sykkle s\u00e5 langt du kan,", 250, 200);
+  text("        pass deg for hindere", 250, 250);
+  text("     Knus isfiender med den ",250, 300);
+  text("  supersoniske ringeklokken,", 250, 350);
+  text("eller slukk brennende vampyrer.", 220, 400);
+  text("Brenn busker og smelt isfiender",220,470);
+  text("      med brennhete flammer", 250, 520);
   
     text("Ring med bjellen for \u00e5 starte", 250, 600);
  } 
@@ -1196,10 +1202,11 @@ public class Tree extends Solid{
 
 public class Tv {
   Capture cam;
-  PImage tv;
+  PImage tv, tv2;
   int i = 0;  
   public Tv(BikerGame b) {
     tv = loadImage("Images/TV.png");
+    tv2 = loadImage("Images/TVn.png");
 
 
     /*String[] cameras = Capture.list();
@@ -1232,9 +1239,17 @@ public class Tv {
     // i = 0;
    //}
     i++;
+    fill(0xff000000);
+     rect(20, height-(tv.height/1.5f) +13, (tv.width/1.5f) -40, (tv.height/1.5f) - 40);
     image(tv, 0, height-(tv.height/1.5f), tv.width/1.5f, tv.height/1.5f);
     //image(cam, 25, 585, 165, 107);
     //set(0,0,cam);
+    
+    rect(width - (tv.width/1.5f) + 20, height-(tv.height/1.5f) +13, (tv.width/1.5f) -40, (tv.height/1.5f) - 40);
+    image(tv, width - tv.width/1.5f, height-(tv.height/1.5f), tv.width/1.5f, tv.height/1.5f);
+    
+    rect(width - (tv.width/1.5f) + 20, 30, (tv.width/1.5f) -40, (tv.height/1.5f) - 40);
+    image(tv2, width - tv.width/1.5f, 0, tv.width/1.5f, tv.height/1.5f);
   }
 }
 

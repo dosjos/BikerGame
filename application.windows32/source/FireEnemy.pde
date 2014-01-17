@@ -15,13 +15,11 @@ public class FireEnemy extends Enemy{
     if(!dying){
       image(fimage[fireTeller], x, y);
       image(eimage[imgTeller],x, y);
-      y++;
     }else{
       image(happy, x,y);
-      y+= scrollSpeed;
     }
-    
-    
+    y+= scrollSpeed;
+    x += -6 + r.nextInt(13);
     if(y % 4 == 0){
     fireTeller++;
     imgTeller++;

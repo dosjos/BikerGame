@@ -383,9 +383,9 @@ void draw() {
       highScore.lastHighscore = -1;
     }
     highScore.draw();
-
-    text("Restarter om " + ((time - (millis() - 8000)))/1000 + " sekunder", 300, 550);
-    if (millis() > time + 7000) {
+    fill(#FFFFFF);
+    text("Restarter om " + ((time - (millis() - 5000)))/1000 + " sekunder", 300, 550);
+    if (millis() > time + 4000) {
       gamestate = 0;
       player = new Player();
       reset();
@@ -569,7 +569,7 @@ void checkForSolidChrash() {
          if(enemys.get(i) instanceof FireEnemy ){
            if(enemys.get(i).dying){
             enemys.get(i).dying = false;
-            texts.add(new ScoreText(150, false, enemys.get(i).x, enemys.get(i).y));
+            texts.add(new ScoreText(-150, false, enemys.get(i).x, enemys.get(i).y));
            }
          }else if (enemys.get(i) instanceof FrostEnemy && !enemys.get(i).dying){
           enemys.get(i).dying = true;
@@ -584,11 +584,11 @@ void checkForSolidChrash() {
   for(int i = 0; i < sonics.size(); i++){
     for(int j = 0; j < enemys.size(); j++){
       float d = dist(sonics.get(i).x,sonics.get(i).y, enemys.get(j).x, enemys.get(j).y );
-      if(enemys.get(j) instanceof FrostEnemy &&  d <= sonics.get(i).h + 50 && !enemys.get(j).dying){
+      if(enemys.get(j) instanceof FrostEnemy &&  Math.abs(d) <= sonics.get(i).h + 50 && !enemys.get(j).dying){
         enemys.get(j).dying = true;
         enemys.get(j).diestate = false;
         texts.add(new ScoreText(100, true, enemys.get(j).x, enemys.get(j).y));
-      }else if(enemys.get(j) instanceof FireEnemy &&  d <= sonics.get(i).h + 50 && d >= sonics.get(i).h && !enemys.get(j).dying){
+      }else if(enemys.get(j) instanceof FireEnemy &&  Math.abs(d) <= sonics.get(i).h + 50 && Math.abs(d) >= sonics.get(i).h && !enemys.get(j).dying){
        enemys.get(j).dying = true;
        texts.add(new ScoreText(100, true, enemys.get(j).x, enemys.get(j).y));
       } 

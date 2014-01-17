@@ -3,10 +3,11 @@ import processing.video.*;
 
 public class Tv {
   Capture cam;
-  PImage tv;
+  PImage tv, tv2;
   int i = 0;  
   public Tv(BikerGame b) {
     tv = loadImage("Images/TV.png");
+    tv2 = loadImage("Images/TVn.png");
 
 
     /*String[] cameras = Capture.list();
@@ -39,9 +40,17 @@ public class Tv {
     // i = 0;
    //}
     i++;
+    fill(#000000);
+     rect(20, height-(tv.height/1.5) +13, (tv.width/1.5) -40, (tv.height/1.5) - 40);
     image(tv, 0, height-(tv.height/1.5), tv.width/1.5, tv.height/1.5);
     //image(cam, 25, 585, 165, 107);
     //set(0,0,cam);
+    
+    rect(width - (tv.width/1.5) + 20, height-(tv.height/1.5) +13, (tv.width/1.5) -40, (tv.height/1.5) - 40);
+    image(tv, width - tv.width/1.5, height-(tv.height/1.5), tv.width/1.5, tv.height/1.5);
+    
+    rect(width - (tv.width/1.5) + 20, 30, (tv.width/1.5) -40, (tv.height/1.5) - 40);
+    image(tv2, width - tv.width/1.5, 0, tv.width/1.5, tv.height/1.5);
   }
 }
 

@@ -15,7 +15,7 @@ public class Menu
   text("eller slukk brennende vampyrer.", 220, 400);
   text("Brenn busker og smelt isfiender",220,470);
   text("      med brennhete flammer", 250, 520);
-  
+  fill(#5DFA5E);
     text("Ring med bjellen for å starte", 250, 600);
  } 
   
