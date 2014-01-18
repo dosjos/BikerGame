@@ -206,7 +206,7 @@ void serialEvent(Serial p) {
 }
 
 void draw() {
-
+try{
 
   if (gamestate == 0) {
     background(0, 0, 0);
@@ -391,6 +391,9 @@ void draw() {
       reset();
     }
   }
+}catch(Exception e){
+  e.printStackTrace();
+}
 }
 
 /** Lytter på knapper, brukes under utvikling på pc**/
